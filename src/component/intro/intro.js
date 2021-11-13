@@ -1,110 +1,100 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import{ Route, Routes} from 'react-router-dom';
 
-const Abc = styled.div`
-    width:500px;
-    height: 500px;
-    background-color: cornflowerblue;
-`
 
 const Background = styled.div`
     /* 초기 화면 */
-    position: absolute;
-    width: 1200px;
-    height: 700px;
+    display: flex;
+    width: 100%;
+    height: 100%;
 
-    background-position: center center;
     background: linear-gradient(180deg, #252F8C 0%, rgba(32, 60, 130, 0.6) 25.52%, rgba(38, 146, 170, 0.76) 66.67%, #843199 100%);
-    border: 1px solid #000000;
     box-sizing: border-box;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 `
 
 const Outground = styled.div`
     /* 디스플레이 영역 */
-    position: relative;
-    width: 700px;
-    height: 500px;
-    left: 20%;
-    top: 20%;
+    margin: auto auto;
 
-    background: rgba(200, 255, 255, 0.25);
+    width: 90%;
+    height: 90%;
+    
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 20px; 
     border: 1px solid rgba(255, 255, 255, 0.5);
 `
 
 const Inground = styled.div`
     /* 로그인 영역 */
-    position: relative;
+    
+    display: table;
+    //position: relative;
+    margin-left: 50%;
+    margin-top: 15%;
+
     width: 400px;
     height: 300px;
-    left: 20%;
-    top: 20%;
 
-    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid white;
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 50px;    
 `
 
-
-const Emoji = styled.div`
+const Mirrorball = styled.img`
+    position: absolute;
+    margin-left: 43%;
+    width: 150px;
+    height: 150px;
 
 `
 
-const Nickname = styled.div`
-
-`
-
-const Entrance = styled.div`
-    width: 60px;
+const Entrance = styled.button`
+    position: relative;
+    width: 70px;
     height: 30px;
-    background-color: cornflowerblue;
+    
+
 `
-
-
 
 
 function Intro() {
 
     return (
-        //<Abc>
-         //   <Link to="/lobby">intro</Link>
-        //</Abc>
-        
+
         <Background>
-
+            <Mirrorball></Mirrorball>
             <Outground>
-
-                <input type="button" value="< OUT" onclick="window.Click();"></input>
-
                 <Inground>
                     <center>
-                        <br></br>이모티콘과 닉네임을 입력하세요<br></br><br></br>
+                    <br></br><br></br><br></br><br></br>이모티콘과 닉네임을 입력하세요<br></br><br></br><br></br><br></br>
 
-                        <form nickname="닉네임">
+                        <form>  
 
-                            <p> <button type="select"> 
-                                <input type="text" id="changeImoji"></input>
-                                <select id="changeTest" onchange="selectBoxChange()"> 
-                                
-                                </select>
-
-                                </button>
-                                <input type="text" name="닉네임"></input> 
-                            </p>
+                            <select id="이모티콘" onchange="selectBoxImoji()"> 
+                                <option value="1">💖</option>
+                                <option value="2">🧡</option>
+                                <option value="3">💛</option>
+                                <option value="4">💚</option>
+                                <option value="5">💙</option>
+                                <option value="6">💜</option>
+                                <option value="7">🤎</option>
+                                <option value="8">🖤</option>
+                                <option value="9">🤍</option>
+                                <option value="10">💗</option>
+                            </select> &nbsp;
                             
-                            <button><Link to="/lobby">입장</Link></button>
-                        
+                            <input type="text" name="닉네임" size="20"></input>
+
+                            <br></br><br></br><br></br><br></br><br></br>
+                            
+                            <Entrance><Link to="/lobby">입장</Link></Entrance>
+
                         </form>
                     </center>
-                    
-
                 </Inground>
             </Outground>
         </Background>
-
-
 
     )}
   
