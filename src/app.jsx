@@ -1,10 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import App from "./app"
 import{ HashRouter, Route, Routes} from 'react-router-dom';
-import Intro from './component/intro';
-import Lobby from './component/lobby';
-import Room from './component/room';
+import Intro from './component/intro/intro';
+import Lobby from './component/lobby/lobby';
+import Room from './component/room/room';
 
 function render() {
   ReactDOM.render(
