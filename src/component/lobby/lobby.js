@@ -3,19 +3,25 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const Background = styled.div`
-    width:1200px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 700px;
+    height: 100%;
     background-color: white;
+    text-align: center;
+    background: #1F2F47;
+    border: 1px solid #000000;
+    box-sizing: border-box;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 `
 const Header = styled.div`
+    flex: 1;
     display: flex;
     justify-content: center;
-    margin: 10px 90px; 
-    width: 60%;
-    background-color: white;
+    align-items: center;
+    margin: 0, auto; 
+    width: 75%;
 `
 const Header_div = styled.div`
     display: flex;
@@ -23,58 +29,73 @@ const Header_div = styled.div`
     width: 33%;
 `
 const Go_intro_btn = styled.button`
-    margin: 20px 200px 10px 0px;
+    flex: 1;
+    margin: 20px auto;
     width: 130px;
     height: 40px;
 `
 const Title = styled.div`
-    font-size: 40px;
+    flex: 1;
+    font-size: 30px;
+    color: lightgray;
 `
 const Room_list_create = styled.div`
+    flex: 3;
     display: flex;
     justify-content: center;
     margin: 0px 90px;
     width: 80%;
-    background-color: white;
 `
 const Room_list = styled.div`
-    display: flex;
+    flex: 1;
     flex-direction: column;
     padding: 10px;
-    border: 2px solid black;
+    border: 2px solid lightgray;
     margin-right: 40px;
     width: 350px;
     height: 350px;
+    color: lightgray;
+`
+const Room_search = styled.div`
+    display: flex;
+    margin: 7px 10px;
+    width: 100%;
 `
 const Room_create = styled.div`
+    flex: 1;
     padding: 10px;
-    border: 2px solid black;
+    border: 2px solid lightgray;
     width: 350px;
     height: 350px;
+    color: lightgray;
 `
 const Create_setting = styled.div`
     display: flex;
     margin: 7px 10px;
-    width: 260px;
+    width: 100%;
 `
 const Footer = styled.div`
+    flex: 1;
     display: flex;
     justify-content: flex-start;
-    margin: 20px 90px;
+    margin: 10px 90px 20px 90px;
     width: 80%;
 `
 const Copyright = styled.div`
     display: flex;
     margin: 50px 5px 20px 90px;
     font-size: 10px;
+    color: lightgray;
 `
 const Volume = styled.div`
     display: flex;
     justify-content: center;
+    align-items: center;
     margin: 20px;
     padding: 10px 10px;
-    border: 2px solid black;
+    border: 2px solid lightgray;
     width: 400px;
+    color: lightgray;
 `
 
 function Lobby() {
@@ -82,7 +103,7 @@ function Lobby() {
     return (
         <Background>
             <Header>
-                <Header_div><Link to="/"><Go_intro_btn>back</Go_intro_btn></Link></Header_div>
+                <Header_div><Link to="/" style={{color: 'black'}} sizes="40x110"><Go_intro_btn>back</Go_intro_btn></Link></Header_div>
                 <Header_div><Title>B대면 노래방</Title></Header_div>
                 <Header_div></Header_div>
                 <br></br>
@@ -92,9 +113,11 @@ function Lobby() {
                 <Room_list>
                     <h2>ROOM LIST</h2><br></br>
                     <p>(잠금) (방제) <Link to="/room"><button>입장</button></Link></p>
+                    <Room_search>Room 검색: <input type='text'></input><button>검색</button></Room_search>
                 </Room_list>
                 <Room_create>
                     <h2>ROOM CREATE</h2><br></br>
+                    <form>
                     <Create_setting>
                         방  제:   <input type='text'></input>
                     </Create_setting>
@@ -104,14 +127,7 @@ function Lobby() {
                     <Create_setting>
                         비밀번호: <input type='password'></input>
                     </Create_setting>
-                    <form>
-                        방제:
-                        <input type='text'></input><br></br>
-                        인원수:
-                        <input type='text'></input><br></br>
-                        비밀번호:
-                        <input type='text'></input><br></br><br></br>
-                        <button type='submit'>방 만들기</button>
+                    <button type='submit'>방 만들기</button>
                     </form>
                 </Room_create>
             </Room_list_create>
