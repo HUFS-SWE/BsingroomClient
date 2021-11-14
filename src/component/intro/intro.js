@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-
+import mirrorball from "../../img/mirrorball.png"
 
 const Background = styled.div`
     /* 초기 화면 */
@@ -19,7 +19,6 @@ const Outground = styled.div`
 
     width: 90%;
     height: 90%;
-    
     background: rgba(255, 255, 255, 0.1);
     border-radius: 20px; 
     border: 1px solid rgba(255, 255, 255, 0.5);
@@ -63,7 +62,7 @@ function Intro() {
     return (
 
         <Background>
-            <Mirrorball></Mirrorball>
+            <Mirrorball src={mirrorball}></Mirrorball>
             <Outground>
                 <Inground>
                     <center>
