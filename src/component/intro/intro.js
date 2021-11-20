@@ -1,7 +1,10 @@
 import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import mirrorball from "../../img/mirrorball.png"
+import mirrorball from "../../img/mirrorball.png";
+import bchar from "../../img/b대면인트로캐릭터.png";
+import bsing from "../../img/B대면노래방.png";
+
 
 const Background = styled.div`
     /* 초기 화면 */
@@ -29,8 +32,8 @@ const Inground = styled.div`
     
     display: table;
     //position: relative;
-    margin-left: 50%;
-    margin-top: 15%;
+    margin-left: 48%;
+    margin-top: 23%;
 
     width: 400px;
     height: 300px;
@@ -43,17 +46,30 @@ const Inground = styled.div`
 const Mirrorball = styled.img`
     position: absolute;
     margin-left: 43%;
-    width: 150px;
-    height: 150px;
+    width: 155px;
+    height: 120px;
+`
 
+const Bchar = styled.img`
+    position: absolute;
+    margin-left: 4%;
+    margin-top: 12%;
+    width: 500px;
+    height: 500px;
+`
+
+const Bsing = styled.img`
+    position: absolute;
+    margin-left: 45%;
+    margin-top: 10%;
+    width: 480px;
+    height: 170px;
 `
 
 const Entrance = styled.button`
     position: relative;
     width: 70px;
     height: 30px;
-    
-
 `
 const Worning = styled.input`
     color: red;
@@ -97,6 +113,8 @@ function Intro() {
 
         <Background>
             <Mirrorball src={mirrorball}></Mirrorball>
+            <Bchar src={bchar}></Bchar>
+            <Bsing src={bsing}></Bsing>
             <Outground>
                 <Inground>
                     <center>
