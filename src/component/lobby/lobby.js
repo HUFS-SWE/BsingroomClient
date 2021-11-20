@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import logo from "../../img/Bsingroomlogo.png";
 import RoomList from './RoomList';
 import CreateRoom from './CreateRoom';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +40,6 @@ const Go_intro_btn = styled.button`
 `
 const Title = styled.div`
     flex: 1;
-    font-size: 30px;
     color: lightgray;
 `
 const Room_list_create = styled.div`
@@ -164,7 +164,7 @@ function Lobby() {
         <Background>
             <Header>
                 <Header_div><Link to="/" style={{color: 'black'}} sizes="40x110"><Go_intro_btn>back</Go_intro_btn></Link></Header_div>
-                <Header_div><Title>B대면 노래방</Title></Header_div>
+                <Header_div><Title><img src={logo} width="100%"></img></Title></Header_div>
                 <Header_div></Header_div>
                 <br></br>
             </Header>
