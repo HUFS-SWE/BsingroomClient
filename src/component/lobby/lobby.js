@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import RoomList from './RoomList';
+import CreateRoom from './CreateRoom';
+import { useNavigate } from 'react-router-dom';
 
 const Background = styled.div`
     width: 100%;
@@ -99,7 +102,64 @@ const Volume = styled.div`
 `
 
 function Lobby() {
+    const [inputs, setInputs] = useState({
+        roomname: '',
+    });
+    const { roomname } = inputs;
+    const onChange = e => {
+        const { name, value } = e.target;
+        setInputs({
+            ...inputs,
+            [name]: value
+        });
+    };
+    const [rooms, setRooms] = useState([
+        {
+          id: 1,
+          roomname: 'velopert',
+        //   email: 'public.velopert@gmail.com',
+        //   active: true
+        },
+        {
+          id: 2,
+          roomname: 'tester',
+        //   email: 'tester@example.com',
+        //   active: false
+        },
+        {
+          id: 3,
+          roomname: 'liz',
+        //   email: 'liz@example.com',
+        //   active: false
+        }
+      ]);
 
+    const nextId = useRef(4);
+    const onCreate = () => {
+        const room = {
+            id: nextId.current,
+            roomname
+            
+        };
+        setRooms(rooms.concat(room));
+
+        setInputs({
+            roomname: ''
+        });
+        nextId.current += 1;
+    };
+    const navigate = useNavigate();
+    const onEnter = roomname => {
+    // user.id 가 파라미터로 일치하지 않는 원소만 추출해서 새로운 배열을 만듬
+    // = user.id 가 id 인 것을 제거함
+    navigate('/room', {replace:true, state: { nickname : {roomname}}})    };
+    // const onToggle = id => {
+    //     setUsers(
+    //       users.map(user =>
+    //         user.id === id ? { ...user, active: !user.active } : user
+    //       )
+    //     );
+    //   };
     return (
         <Background>
             <Header>
@@ -111,24 +171,17 @@ function Lobby() {
             
             <Room_list_create>
                 <Room_list>
-                    <h2>ROOM LIST</h2><br></br>
-                    <p>(잠금) (방제) <Link to="/room"><button>입장</button></Link></p>
-                    <Room_search>Room 검색: <input type='text'></input><button>검색</button></Room_search>
+                    <h2>ROOM LIST</h2>
+                    <Room_search><input type='text'></input><button>검색</button></Room_search>
+                    <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_list>
                 <Room_create>
                     <h2>ROOM CREATE</h2><br></br>
-                    <form>
-                    <Create_setting>
-                        방  제:   <input type='text'></input>
-                    </Create_setting>
-                    <Create_setting>
-                        인  원  수: <input type='text'></input>
-                    </Create_setting>
-                    <Create_setting>
-                        비밀번호: <input type='password'></input>
-                    </Create_setting>
-                    <button type='submit'>방 만들기</button>
-                    </form>
+                    <CreateRoom
+                        roomname={roomname}
+                        onChange={onChange}
+                        onCreate={onCreate}
+                    />
                 </Room_create>
             </Room_list_create>
             <Footer>
