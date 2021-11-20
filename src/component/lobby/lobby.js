@@ -1,6 +1,11 @@
-import React from 'react';
+import React,{useState, useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import User from '../../modules/class/user';
+import {io} from 'socket.io-client'
+
+const ENDPOINT = "https://792d-211-217-117-91.ngrok.io/";
+const socket = io(ENDPOINT);
 
 const Background = styled.div`
     width: 100%;
@@ -99,6 +104,26 @@ const Volume = styled.div`
 `
 
 function Lobby() {
+    let nickname;
+    let icon;
+    let audioDevice;
+    useEffect(() => {
+        
+        nickname = history.state.usr.nickname.nickname;
+        icon = history.state.usr.icon.icon;
+        console.log(nickname, icon);
+
+        navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false})
+        .then(function(stream){
+            audioDevice = stream.getTracks()[0].label
+        })
+
+      }, []);
+
+    const user = new User(socket, icon, nickname, audioDevice);
+    user.enterRoom();
 
     return (
         <Background>

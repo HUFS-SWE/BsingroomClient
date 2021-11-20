@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, {useState} from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import mirrorball from "../../img/mirrorball.png"
 
@@ -55,9 +55,43 @@ const Entrance = styled.button`
     
 
 `
-
+const Worning = styled.input`
+    color: red;
+    border: none;
+    background: transparent;
+`
 
 function Intro() {
+    const navigate = useNavigate();
+
+    const [inputs, setInputs] = useState({
+        nickname: '',
+        icon:''
+      });
+
+    const { nickname ,icon } = inputs; // 비구조화 할당을 통해 값 추출
+
+    const [worning, setWorning] = useState();
+
+    const onChange = (e) => {
+      const { value, name } = e.target; // 우선 e.target 에서 name 과 value 를 추출
+      setInputs({
+        ...inputs,                      // 기존의 input 객체를 복사한 뒤
+        [name]: value                   // name 키를 가진 값을 value 로 설정
+      });
+    };
+
+    const onSubmit = (e) =>{
+        e.preventDefault();
+
+        if(nickname==="" || icon===""){
+            setWorning("icon을 선택하고 nickname을 입력해주세요.")
+        }
+        else{
+            setWorning("입장 중입니다.....")
+            navigate('/lobby', {replace:true, state: { nickname : {nickname}, icon : {icon}}})
+        }
+    }
 
     return (
 
@@ -68,10 +102,11 @@ function Intro() {
                     <center>
                     <br></br><br></br><br></br><br></br>이모티콘과 닉네임을 입력하세요<br></br><br></br><br></br><br></br>
 
-                        <form>  
+                        <form onSubmit={onSubmit}>  
 
-                            <select id="이모티콘" onchange="selectBoxImoji()"> 
-                                <option value="1">💖</option>
+                            <select name="icon" value={icon} onChange={onChange}> 
+                                <option value="" selected disabled hidden ></option>
+                                <option value="💖">💖</option>
                                 <option value="2">🧡</option>
                                 <option value="3">💛</option>
                                 <option value="4">💚</option>
@@ -83,11 +118,11 @@ function Intro() {
                                 <option value="10">💗</option>
                             </select> &nbsp;
                             
-                            <input type="text" name="닉네임" size="20"></input>
+                            <input type="text" name="nickname" onChange={onChange} placeholder="nickname" value={nickname} size="20"></input>
 
                             <br></br><br></br><br></br><br></br><br></br>
-                            
-                            <Entrance><Link to="/lobby">입장</Link></Entrance>
+                            <Worning readOnly={true} type="text" value={worning}/>
+                            <Entrance type="submit">입장</Entrance>
 
                         </form>
                     </center>
