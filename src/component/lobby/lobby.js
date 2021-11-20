@@ -170,11 +170,10 @@ function Lobby() {
             </Header>
             
             <Room_list_create>
-            <Link to="/room"><button>room</button></Link>
                 <Room_list>
-                    <h2>ROOM LIST</h2><br></br>
+                    <h2>ROOM LIST</h2>
+                    <Room_search><input type='text'></input><button>검색</button></Room_search>
                     <RoomList rooms={rooms} onEnter={onEnter}/>
-                    <Room_search>Room 검색: <input type='text'></input><button>검색</button></Room_search>
                 </Room_list>
                 <Room_create>
                     <h2>ROOM CREATE</h2><br></br>
@@ -183,7 +182,6 @@ function Lobby() {
                         onChange={onChange}
                         onCreate={onCreate}
                     />
-      <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_create>
             </Room_list_create>
             <Footer>
