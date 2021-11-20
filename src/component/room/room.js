@@ -134,7 +134,10 @@ const ExitButton = styled.div`
     position: relative;
     
 `
+
+
 function Room() {
+
 
     return (
         <Background>
@@ -169,8 +172,7 @@ function Room() {
 
             <Roomname>
             <p>
-                (방제)
-                <input type='text'style={{width: "300px"}}></input>
+                {history.state.usr.nickname.roomname}  
             </p>
             </Roomname>
 
