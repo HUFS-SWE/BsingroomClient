@@ -206,9 +206,8 @@ const ExitButton = styled.button`
 `
 
 
-
-
 function Room() {
+
 
     return (
         <Background>
