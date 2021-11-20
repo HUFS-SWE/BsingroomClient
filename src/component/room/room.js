@@ -1,9 +1,9 @@
-import React, { useCallback } from 'react';
+import React, { useEffect,useCallback, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
-
+import {UserDispatch} from '../../app.js'
 
 const Background = styled.div`
     /* 배경 */
@@ -207,7 +207,10 @@ const ExitButton = styled.button`
 
 
 function Room() {
-
+    const {user, setuser} = useContext(UserDispatch);
+    useEffect(()=>{
+        console.log(user);
+    })
 
     return (
         <Background>
@@ -327,7 +330,7 @@ function Room() {
                                 color: "#E88989"
                                 }} >
                          방 나가기 </ExitButton>
-                    </Link>
+                </Link>
             </Exit>
 
         </Right>
