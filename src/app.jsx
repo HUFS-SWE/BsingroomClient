@@ -7,14 +7,14 @@ import Room from './component/room/room';
 
 function render() {
   ReactDOM.render(
-    <React.StrictMode>
+      <React.StrictMode>
         <HashRouter>
-        <Routes>
-        <Route path="/" element={<Intro/>} />
-        <Route path="/lobby"  element={<Lobby/>} />
-        <Route path="/room"  element={<Room/>} />
-        </Routes>
+          <Routes>
+            <Route path="/" element={<Intro/>} />
+            <Route path="/lobby"  element={<Lobby/>} />
+            <Route path="/room"  element={<Room/>} />
+          </Routes>
         </HashRouter>
-    </React.StrictMode>, document.body);
+      </React.StrictMode>, document.body);
 }
 render();

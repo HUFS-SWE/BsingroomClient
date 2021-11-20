@@ -1,10 +1,14 @@
-import React, { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React,{useState, useEffect, useRef} from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import logo from "../../img/Bsingroomlogo.png";
+import User from '../../modules/class/user';
 import RoomList from './RoomList';
 import CreateRoom from './CreateRoom';
-import { useNavigate } from 'react-router-dom';
+import {io} from 'socket.io-client'
+
+const ENDPOINT = "https://3ba1-211-217-117-91.ngrok.io/";
+const socket = io(ENDPOINT);
 
 const Background = styled.div`
     width: 100%;
@@ -102,6 +106,26 @@ const Volume = styled.div`
 `
 
 function Lobby() {
+    let nickname;
+    let icon;
+    let audioDevice;
+    useEffect(() => {
+        
+        nickname = history.state.usr.nickname.nickname;
+        icon = history.state.usr.icon.icon;
+        console.log(nickname, icon);
+
+        navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false})
+        .then(function(stream){
+            audioDevice = stream.getTracks()[0].label
+        })
+
+      }, []);
+
+    const user = new User(socket, icon, nickname, audioDevice);
+    user.enterRoom();
     const [inputs, setInputs] = useState({
         roomname: '',
     });
