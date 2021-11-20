@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import mirrorball from "../../img/mirrorball.png"
+import mirrorball from "../../img/mirrorball.png";
+import bchar from "../../img/b대면인트로캐릭터.png";
+import bsing from "../../img/B대면노래방.png";
+
 
 const Background = styled.div`
     /* 초기 화면 */
@@ -29,8 +32,8 @@ const Inground = styled.div`
     
     display: table;
     //position: relative;
-    margin-left: 50%;
-    margin-top: 15%;
+    margin-left: 48%;
+    margin-top: 23%;
 
     width: 400px;
     height: 300px;
@@ -43,17 +46,30 @@ const Inground = styled.div`
 const Mirrorball = styled.img`
     position: absolute;
     margin-left: 43%;
-    width: 150px;
-    height: 150px;
+    width: 155px;
+    height: 120px;
+`
 
+const Bchar = styled.img`
+    position: absolute;
+    margin-left: 4%;
+    margin-top: 12%;
+    width: 500px;
+    height: 500px;
+`
+
+const Bsing = styled.img`
+    position: absolute;
+    margin-left: 45%;
+    margin-top: 10%;
+    width: 480px;
+    height: 170px;
 `
 
 const Entrance = styled.button`
     position: relative;
     width: 70px;
     height: 30px;
-    
-
 `
 
 
@@ -63,13 +79,15 @@ function Intro() {
 
         <Background>
             <Mirrorball src={mirrorball}></Mirrorball>
+            <Bchar src={bchar}></Bchar>
+            <Bsing src={bsing}></Bsing>
             <Outground>
                 <Inground>
                     <center>
                     <br></br><br></br><br></br><br></br>이모티콘과 닉네임을 입력하세요<br></br><br></br><br></br><br></br>
 
-                        <form>  
-
+                        <form>
+                        
                             <select id="이모티콘" onchange="selectBoxImoji()"> 
                                 <option value="1">💖</option>
                                 <option value="2">🧡</option>
@@ -87,7 +105,9 @@ function Intro() {
 
                             <br></br><br></br><br></br><br></br><br></br>
                             
-                            <Entrance><Link to="/lobby">입장</Link></Entrance>
+                            <Link to="/lobby"> 
+                                <Entrance type="summit"> 입장</Entrance> 
+                            </Link>
 
                         </form>
                     </center>
