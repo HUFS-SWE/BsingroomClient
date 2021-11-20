@@ -1,4 +1,4 @@
-import React,{useState, useEffect, useRef} from 'react';
+import React,{useState, useEffect, useRef, useContext} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import logo from "../../img/Bsingroomlogo.png";
@@ -6,8 +6,9 @@ import User from '../../modules/class/user';
 import RoomList from './RoomList';
 import CreateRoom from './CreateRoom';
 import {io} from 'socket.io-client'
+import {UserDispatch} from '../../app.js'
 
-const ENDPOINT = "https://3ba1-211-217-117-91.ngrok.io/";
+const ENDPOINT = "https://1846-61-253-62-201.ngrok.io/";
 const socket = io(ENDPOINT);
 
 const Background = styled.div`
@@ -109,23 +110,21 @@ function Lobby() {
     let nickname;
     let icon;
     let audioDevice;
+
+    const {user, setuser} = useContext(UserDispatch);
+
     useEffect(() => {
-        
         nickname = history.state.usr.nickname.nickname;
         icon = history.state.usr.icon.icon;
-        console.log(nickname, icon);
-
         navigator.mediaDevices.getUserMedia({
             audio: true,
             video: false})
         .then(function(stream){
-            audioDevice = stream.getTracks()[0].label
+            audioDevice = stream.getTracks()[0].label;
+            setuser(new User(socket, icon, nickname, audioDevice))
         })
-
       }, []);
-
-    const user = new User(socket, icon, nickname, audioDevice);
-    user.enterRoom();
+    console.log(user)
     const [inputs, setInputs] = useState({
         roomname: '',
     });
@@ -176,7 +175,7 @@ function Lobby() {
     const onEnter = roomname => {
     // user.id 가 파라미터로 일치하지 않는 원소만 추출해서 새로운 배열을 만듬
     // = user.id 가 id 인 것을 제거함
-    navigate('/room', {replace:true, state: { nickname : {roomname}}})    };
+    navigate('/room', {replace:true}) };
     // const onToggle = id => {
     //     setUsers(
     //       users.map(user =>
@@ -184,6 +183,8 @@ function Lobby() {
     //       )
     //     );
     //   };
+
+
     return (
         <Background>
             <Header>
