@@ -205,7 +205,10 @@ const ExitButton = styled.button`
     position: relative;
 `
 
+function createReserv(e){
+    e.preventDefault();
 
+}
 function Room() {
     const {user, setuser} = useContext(UserDispatch);
     useEffect(()=>{
@@ -260,7 +263,7 @@ function Room() {
 
             <ReserveSong>
                 <center>
-                <form>
+                <form onSubmit={createReserv}>
                     <input type='url' placeholder='반주 URL' 
                         style={{width: "90%", 
                                 height: "30px", 

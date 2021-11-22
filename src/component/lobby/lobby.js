@@ -1,3 +1,4 @@
+
 import React,{useState, useEffect, useRef, useContext} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -8,8 +9,10 @@ import CreateRoom from './CreateRoom';
 import {io} from 'socket.io-client'
 import {UserDispatch} from '../../app.js'
 
-const ENDPOINT = "https://1846-61-253-62-201.ngrok.io/";
+const ENDPOINT = "localhost:8000";
 const socket = io(ENDPOINT);
+let socketID;
+socket.on('connect', () => {socketID = socket.id});
 
 const Background = styled.div`
     width: 100%;
@@ -56,7 +59,7 @@ const Room_list_create = styled.div`
 `
 const Room_list = styled.div`
     flex: 1;
-    flex-direction: column;
+    flex-direction: row;
     padding: 10px;
     border: 2px solid lightgray;
     margin-right: 40px;
@@ -112,6 +115,7 @@ function Lobby() {
     let audioDevice;
 
     const {user, setuser} = useContext(UserDispatch);
+   
 
     useEffect(() => {
         nickname = history.state.usr.nickname.nickname;
@@ -121,10 +125,12 @@ function Lobby() {
             video: false})
         .then(function(stream){
             audioDevice = stream.getTracks()[0].label;
-            setuser(new User(socket, icon, nickname, audioDevice))
+            setuser(new User(socket,icon, nickname, audioDevice))
+            
         })
       }, []);
-    console.log(user)
+      const io = user.socket
+    console.log(io)
     const [inputs, setInputs] = useState({
         roomname: '',
     });
@@ -172,10 +178,12 @@ function Lobby() {
         nextId.current += 1;
     };
     const navigate = useNavigate();
-    const onEnter = roomname => {
+
+    const onEnter = (roomname) => {
+        user.enterRoom();}
     // user.id 가 파라미터로 일치하지 않는 원소만 추출해서 새로운 배열을 만듬
     // = user.id 가 id 인 것을 제거함
-    navigate('/room', {replace:true}) };
+    //navigate('/room', {replace:true, state : {roomname : {roomname} }}) };
     // const onToggle = id => {
     //     setUsers(
     //       users.map(user =>
@@ -183,8 +191,6 @@ function Lobby() {
     //       )
     //     );
     //   };
-
-
     return (
         <Background>
             <Header>
@@ -197,7 +203,10 @@ function Lobby() {
             <Room_list_create>
                 <Room_list>
                     <h2>ROOM LIST</h2>
-                    <Room_search><input type='text'></input><button>검색</button></Room_search>
+                    <div style={{display:'flex'}}>
+                    <div style={{flex:2}}><input type='text'></input><button>검색</button></div>
+                    <div style={{flex:1}}><button>새로고침</button></div>
+                    </div>
                     <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_list>
                 <Room_create>

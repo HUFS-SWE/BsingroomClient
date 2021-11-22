@@ -4,7 +4,7 @@ export default class User{
     roomInfo = false;
 
     constructor(socket, userIcon, nickname, audioDevice){
-        this.socket = socket
+        this.socket = socket;
         this.userIcon = userIcon;
         this.nickname = nickname;
         this.audioDevice = audioDevice;
