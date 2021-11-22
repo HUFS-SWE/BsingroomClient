@@ -1,4 +1,3 @@
-
 import React,{useState, useEffect, useRef, useContext} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -9,11 +8,7 @@ import CreateRoom from './CreateRoom';
 import {io} from 'socket.io-client'
 import {UserDispatch} from '../../app.js'
 
-const ENDPOINT = "localhost:8000";
-const socket = io(ENDPOINT);
-let socketID;
-socket.on('connect', () => {socketID = socket.id});
-
+//style 정의
 const Background = styled.div`
     width: 100%;
     display: flex;
@@ -109,32 +104,54 @@ const Volume = styled.div`
     color: lightgray;
 `
 
+
+//socket객체 정의
+const ENDPOINT = "localhost:3000";
+const socket = io.connect(ENDPOINT);
+
+
+//Lobby 컴포넌트 정의
 function Lobby() {
-    let nickname;
-    let icon;
-    let audioDevice;
 
-    const {user, setuser} = useContext(UserDispatch);
-   
+    var {user, setUser} = useContext(UserDispatch); //User 전역객체 정의 from app.js
+    const navigate = useNavigate(); //react의 redirect함수
 
+    //컴포넌트 마운트 시 한번만 실행. setUser통해 User인스턴스 정의
+    //history객체를 통해 intro에서 submit된 값을 세팅한다.
     useEffect(() => {
-        nickname = history.state.usr.nickname.nickname;
-        icon = history.state.usr.icon.icon;
+        if(!user){
         navigator.mediaDevices.getUserMedia({
             audio: true,
             video: false})
         .then(function(stream){
-            audioDevice = stream.getTracks()[0].label;
-            setuser(new User(socket,icon, nickname, audioDevice))
-            
+            setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream.getTracks()[0].label))
         })
-      }, []);
-      const io = user.socket
-    console.log(io)
+        }else{
+            fetchRoom();
+        }
+      }, [user]); //user객체가 바뀔때마다 실행
+    
+    //setRooms(rooms.concat(user.roomList))
+    console.log(user)
+    //RoomList컴포넌트 관련 상태관리
+    const [rooms, setRooms] = useState([]);
+
+    const fetchRoom = () => {       //User객체 내부에 room정보를 업데이트한다.
+        socket.emit("fetchRoom")
+        setRooms(user.roomList)
+    };
+
+    const onEnter = (roomname) => {
+        user.joinRoom(roomname);
+        navigate('/room',{replace:true})
+    }
+
+    //CreateRoom컴포넌트 관련 상태관리
     const [inputs, setInputs] = useState({
         roomname: '',
     });
     const { roomname } = inputs;
+
     const onChange = e => {
         const { name, value } = e.target;
         setInputs({
@@ -142,45 +159,13 @@ function Lobby() {
             [name]: value
         });
     };
-    const [rooms, setRooms] = useState([
-        {
-          id: 1,
-          roomname: 'velopert',
-        //   email: 'public.velopert@gmail.com',
-        //   active: true
-        },
-        {
-          id: 2,
-          roomname: 'tester',
-        //   email: 'tester@example.com',
-        //   active: false
-        },
-        {
-          id: 3,
-          roomname: 'liz',
-        //   email: 'liz@example.com',
-        //   active: false
-        }
-      ]);
 
-    const nextId = useRef(4);
-    const onCreate = () => {
-        const room = {
-            id: nextId.current,
-            roomname
-            
-        };
-        setRooms(rooms.concat(room));
-
-        setInputs({
-            roomname: ''
-        });
-        nextId.current += 1;
+    const onCreate = () => {        //'방만들기' 클릭 시 실행
+        user.joinRoom("room_"+roomname)
+        navigate('/room',{replace:true})
     };
-    const navigate = useNavigate();
 
-    const onEnter = (roomname) => {
-        user.enterRoom();}
+
     // user.id 가 파라미터로 일치하지 않는 원소만 추출해서 새로운 배열을 만듬
     // = user.id 가 id 인 것을 제거함
     //navigate('/room', {replace:true, state : {roomname : {roomname} }}) };
@@ -205,7 +190,7 @@ function Lobby() {
                     <h2>ROOM LIST</h2>
                     <div style={{display:'flex'}}>
                     <div style={{flex:2}}><input type='text'></input><button>검색</button></div>
-                    <div style={{flex:1}}><button>새로고침</button></div>
+                    <div style={{flex:1}}><button onClick={fetchRoom}>새로고침</button></div>
                     </div>
                     <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_list>
