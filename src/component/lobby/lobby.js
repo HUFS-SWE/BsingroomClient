@@ -125,26 +125,30 @@ function Lobby() {
                 video: false})
             .then(function(stream){
                 setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream.getTracks()[0].label))
+                fetchRoom()
             })
-            fetchRoom()
+            
         
       }, []); //user객체가 바뀔때마다 실행
     
-    //setRooms(rooms.concat(user.roomList))
+    console.log(user)
 
     //RoomList컴포넌트 관련 상태관리
     const [rooms, setRooms] = useState([]);
 
+    socket.on('showRoomList', (rooms)=>{
+        let roomList = [];
+        for(var i=0; i<rooms.length; ++i){
+            if(rooms[i]) //if(rooms[i].slice(3)=="room")
+            roomList.push({roomname:rooms[i]}) 
+        }
+        console.log('fetch')
+        setRooms(roomList)
+    })
+
     const fetchRoom = () => {       //User객체 내부에 room정보를 업데이트한다.
         socket.emit("fetchRoom")
-        socket.on('showRoomList', (rooms)=>{
-            let roomList = [];
-            for(var i=0; i<rooms.length; ++i){
-                if(rooms[i]) //if(rooms[i].slice(3)=="room")
-                roomList.push({roomname:rooms[i]}) 
-            }
-            setRooms(roomList)
-        })
+        
     };
 
     const onEnter = (roomname) => {
