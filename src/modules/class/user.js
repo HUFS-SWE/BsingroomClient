@@ -12,7 +12,6 @@ export default class User{
     joinRoom(roomname){
         this.socket.emit('joinRoom',roomname)
         this.roomInfo = roomname;
-        this.socket.emit("fetchRoom")
     }
 }
     //host (host==true)
