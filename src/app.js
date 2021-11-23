@@ -8,16 +8,16 @@ export const UserDispatch = createContext(null);
 
 
 function App(){
-    const [user, setuser] = useState(null);
+    var [user, setUser] = useState(null);
 
     return(
         <HashRouter>
           <Routes>
-            <Route path="/" element={<UserDispatch.Provider value={{user,setuser}}><Intro/></UserDispatch.Provider>}/>
+            <Route path="/" element={<UserDispatch.Provider value={{user,setUser}}><Intro/></UserDispatch.Provider>}/>
           
-            <Route path="/lobby" element={<UserDispatch.Provider value={{user,setuser}}><Lobby/></UserDispatch.Provider>}/>
+            <Route path="/lobby" element={<UserDispatch.Provider value={{user,setUser}}><Lobby/></UserDispatch.Provider>}/>
           
-            <Route path="/room" element={ <UserDispatch.Provider value={{user,setuser}}><Room/></UserDispatch.Provider>}/>
+            <Route path="/room" element={ <UserDispatch.Provider value={{user,setUser}}><Room/></UserDispatch.Provider>}/>
           </Routes>
         </HashRouter>
     )

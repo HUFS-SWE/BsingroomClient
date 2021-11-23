@@ -1,5 +1,5 @@
-import React, { useEffect,useCallback, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
@@ -205,13 +205,21 @@ const ExitButton = styled.button`
     position: relative;
 `
 
+function createReserv(e){
+    e.preventDefault();
 
+}
 function Room() {
     const {user, setuser} = useContext(UserDispatch);
+    const navigate = useNavigate(); 
+
     useEffect(()=>{
         console.log(user);
     })
 
+    const exitToLobby = () =>{
+        navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
+    }
     return (
         <Background>
         
@@ -260,7 +268,7 @@ function Room() {
 
             <ReserveSong>
                 <center>
-                <form>
+                <form onSubmit={createReserv}>
                     <input type='url' placeholder='반주 URL' 
                         style={{width: "90%", 
                                 height: "30px", 
@@ -321,16 +329,15 @@ function Room() {
             </ChatInput>
 
             <Exit>
-                <Link to="/lobby">
-                    <ExitButton style={{height:"30px", width:"100px",
+                    <ExitButton onClick={exitToLobby} style={{height:"30px", width:"100px",
                                 backgroundColor: "#8F2121",
                                 backgroundRadius: "10px",
                                 border: "solid 1px black",
                                 borderRadius: "10px",
                                 color: "#E88989"
                                 }} >
-                         방 나가기 </ExitButton>
-                </Link>
+                         방 나가기 
+                    </ExitButton>
             </Exit>
 
         </Right>
