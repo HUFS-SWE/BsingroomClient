@@ -106,7 +106,7 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "localhost:3000";
+const ENDPOINT = "https://26ff-61-253-62-201.ngrok.io";
 const socket = io.connect(ENDPOINT);
 
 
@@ -119,26 +119,32 @@ function Lobby() {
     //컴포넌트 마운트 시 한번만 실행. setUser통해 User인스턴스 정의
     //history객체를 통해 intro에서 submit된 값을 세팅한다.
     useEffect(() => {
-        if(!user){
-        navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: false})
-        .then(function(stream){
-            setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream.getTracks()[0].label))
-        })
-        }else{
-            fetchRoom();
-        }
-      }, [user]); //user객체가 바뀔때마다 실행
+        
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: false})
+            .then(function(stream){
+                setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream.getTracks()[0].label))
+            })
+            fetchRoom()
+        
+      }, []); //user객체가 바뀔때마다 실행
     
     //setRooms(rooms.concat(user.roomList))
-    console.log(user)
+
     //RoomList컴포넌트 관련 상태관리
     const [rooms, setRooms] = useState([]);
 
     const fetchRoom = () => {       //User객체 내부에 room정보를 업데이트한다.
         socket.emit("fetchRoom")
-        setRooms(user.roomList)
+        socket.on('showRoomList', (rooms)=>{
+            let roomList = [];
+            for(var i=0; i<rooms.length; ++i){
+                if(rooms[i]) //if(rooms[i].slice(3)=="room")
+                roomList.push({roomname:rooms[i]}) 
+            }
+            setRooms(roomList)
+        })
     };
 
     const onEnter = (roomname) => {
