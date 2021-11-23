@@ -1,9 +1,10 @@
-import React, { useEffect,useCallback, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useCallback, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
-import {UserDispatch} from '../../app.js'
+import { UserDispatch } from '../../app.js'
+import Leave from './leave';
 
 const Background = styled.div`
     /* 배경 */
@@ -207,135 +208,156 @@ const ExitButton = styled.button`
 
 
 function Room() {
-    const {user, setuser} = useContext(UserDispatch);
-    useEffect(()=>{
-        console.log(user);
+    let nickname;
+    let icon;
+
+    const { user, setuser } = useContext(UserDispatch);
+
+    useEffect(() => {
+        nickname = user.nickname
+        icon = user.icon
+        console.log(user.nickname, user.icon);
     })
+
+    const navigate = useNavigate();
+
+    const onLeave = () => {
+    navigate('/lobby', {replace:true,  state: { nickname : {nickname}, icon : {icon}}}) };
+    
+    console.log(user.nickname)
+    console.log(history.state.usr)
 
     return (
         <Background>
-        
-        <Left>
 
-            <List>
-                <div>
-                예약목록 <br></br><br></br>
-                <textarea cols="25" rows="15" 
-                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
-                        resize: "none"}}>
-                    <input type='text'></input>
-                </textarea>
-                </div>
-            </List>
+            <Left>
 
-            <List>
-                <div>
-                참가자<br></br><br></br>
-                <textarea cols="25" rows="15"
-                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
-                        borderColor: "white",
-                        resize: "none"}}>
-                    <input type='text'></input></textarea>
-                </div>   
-            </List>
+                <List>
+                    <div>
+                        예약목록 <br></br><br></br>
+                        <textarea cols="25" rows="15"
+                            style={{
+                                backgroundColor: "rgba(255,255,255,0.5)",
+                                resize: "none"
+                            }}>
+                            <input type='text'></input>
+                        </textarea>
+                    </div>
+                </List>
 
-            <Copyright><center>
-                @Copyright 소프트웨어 공학 1조
-            </center></Copyright>
+                <List>
+                    <div>
+                        참가자<br></br><br></br>
+                        <textarea cols="25" rows="15"
+                            style={{
+                                backgroundColor: "rgba(255,255,255,0.5)",
+                                borderColor: "white",
+                                resize: "none"
+                            }}>
+                            {user.nickname}</textarea>
+                    </div>
+                </List>
 
-        </Left>
+                <Copyright><center>
+                    @Copyright 소프트웨어 공학 1조
+                </center></Copyright>
 
-        <Center>
-            
-            <Roomname>
-                (방제) <ViewTextarea readonly="readonly"></ViewTextarea>
-            </Roomname>
+            </Left>
 
-            
-            <iframe width="400px" height="315px" frameborder='1' border-width='1px' border-color='white' border-style='solid' src="https://www.youtube.com/embed/fF08MR7SvkQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>           
-            
-            <br></br><p>
-                현재곡: <ViewTextarea></ViewTextarea>
-            </p><br></br>
+            <Center>
 
-            <ReserveSong>
-                <center>
-                <form>
-                    <input type='url' placeholder='반주 URL' 
-                        style={{width: "90%", 
-                                height: "30px", 
-                                position: 'relative', 
-                                top:'20px'}}>
-                    </input>
-                    <SongReserveButton>
-                        <button type='submit' 
-                                style={{width: "60px", height: "30px",
-                                backgroundColor: "#C3FF9E",
-                                border: "solid 1px",
-                                borderRadius: "10px"}}>
-                            예약</button></SongReserveButton>
-                </form>
-                </center>
-            </ReserveSong>
-            
-            <Sound>
-                Input <input type='range'></input>
-                Output <input type='range'></input>
-            </Sound> 
+                <Roomname>
+                    {history.state.usr.roomname.roomname} <ViewTextarea readonly="readonly"></ViewTextarea>
+                </Roomname>
 
-        </Center>
 
-        <Right>
-            
-            <NetworkStatus>
+                <iframe width="400px" height="315px" frameborder='1' border-width='1px' border-color='white' border-style='solid' src="https://www.youtube.com/embed/fF08MR7SvkQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+                <br></br><p>
+                    현재곡: <ViewTextarea></ViewTextarea>
+                </p><br></br>
+
+                <ReserveSong>
+                    <center>
+                        <form>
+                            <input type='url' placeholder='반주 URL'
+                                style={{
+                                    width: "90%",
+                                    height: "30px",
+                                    position: 'relative',
+                                    top: '20px'
+                                }}>
+                            </input>
+                            <SongReserveButton>
+                                <button type='submit'
+                                    style={{
+                                        width: "60px", height: "30px",
+                                        backgroundColor: "#C3FF9E",
+                                        border: "solid 1px",
+                                        borderRadius: "10px"
+                                    }}>
+                                    예약</button></SongReserveButton>
+                        </form>
+                    </center>
+                </ReserveSong>
+
+                <Sound>
+                    Input <input type='range'></input>
+                    Output <input type='range'></input>
+                </Sound>
+
+            </Center>
+
+            <Right>
+
+                <NetworkStatus>
                     (네트워크 신호)
-            </NetworkStatus>
+                </NetworkStatus>
 
-            <Chatting>
-                <p>
-                채팅<br></br><br></br>
-                <textarea cols="25" rows="25"
-                        style={{backgroundColor: "rgb(255,255,255,0.5)", 
-                            resize: "none"}}>
-                        <input type='text'></input>
-                </textarea>
-                </p>
-            </Chatting>
+                <Chatting>
+                    <p>
+                        채팅<br></br><br></br>
+                        <textarea cols="25" rows="25"
+                            style={{
+                                backgroundColor: "rgb(255,255,255,0.5)",
+                                resize: "none"
+                            }}>
+                            <input type='text'></input>
+                        </textarea>
+                    </p>
+                </Chatting>
 
-            <ChatInput>
-                <form>
-                    <textarea type="input" text-overflow="clip" 
-                        style={{width: "80%", 
-                                height: "100%",  
+                <ChatInput>
+                    <form>
+                        <textarea type="input" text-overflow="clip"
+                            style={{
+                                width: "80%",
+                                height: "100%",
                                 resize: "none",
-                                border: "white"}}>        
-                    </textarea>
+                                border: "white"
+                            }}>
+                        </textarea>
 
-                    <button type="submit" 
-                        style={{height:"30px", width:"auto",
-                                backgroundColor: "#11ffee00"}} >
-                        <img src='../../img/채팅전송버튼.png' 
-                            height="15" width="15"></img>
-                    </button>
-                </form>
-            </ChatInput>
+                        <button type="submit"
+                            style={{
+                                height: "30px", width: "auto",
+                                backgroundColor: "#11ffee00"
+                            }} >
+                            <img src='../../img/채팅전송버튼.png'
+                                height="15" width="15"></img>
+                        </button>
+                    </form>
+                </ChatInput>
 
-            <Exit>
-                <Link to="/lobby">
-                    <ExitButton style={{height:"30px", width:"100px",
-                                backgroundColor: "#8F2121",
-                                backgroundRadius: "10px",
-                                border: "solid 1px black",
-                                borderRadius: "10px",
-                                color: "#E88989"
-                                }} >
-                         방 나가기 </ExitButton>
-                </Link>
-            </Exit>
+                <Exit>  
+                    <Leave onLeave={onLeave}/>
 
-        </Right>
-        
+                </Exit>
+
+            </Right>
+
         </Background>
-    )}
+    )
+}
 
 export default Room;
