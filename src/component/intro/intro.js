@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import mirrorball from "../../img/mirrorball.png";
 import bchar from "../../img/b대면인트로캐릭터.png";
 import bsing from "../../img/B대면노래방.png";
+import { height } from 'dom-helpers';
+import { borderRadius } from '@mui/system';
 
 
 const Background = styled.div`
@@ -68,8 +70,22 @@ const Bsing = styled.img`
 
 const Entrance = styled.button`
     position: relative;
-    width: 70px;
-    height: 30px;
+    width: 80px;
+    height: 32px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+
+    background-color: #EEEEEE;
+    border: 1px solid navy;
+    border-radius: 5px;
+
+    box-shadow: 3px 3px navy;
+
+    &:hover {
+        background: #FFFFFF;}
+    &:active {
+        background: #DDDDDD;}
 `
 const Worning = styled.input`
     color: red;
@@ -100,13 +116,20 @@ function Intro() {
     const onSubmit = (e) =>{
         e.preventDefault();
 
-        if(nickname==="" || icon===""){
+        if(nickname==="" || icon==="") {
             setWorning("icon을 선택하고 nickname을 입력해주세요.")
         }
         else{
             setWorning("입장 중입니다.....")
             navigate('/lobby', {replace:true, state: { nickname : nickname, icon : icon}})
         }
+    }
+
+
+    const onKeyPress = (e) => {
+        if(e.key === 'Enter') {
+            onclick()
+        }   
     }
 
     return (
@@ -118,28 +141,34 @@ function Intro() {
             <Outground>
                 <Inground>
                     <center>
-                    <br></br><br></br><br></br><br></br>이모티콘과 닉네임을 입력하세요<br></br><br></br><br></br><br></br>
+                    <br></br><br></br><br></br><br></br>이모티콘과 닉네임을 입력하세요<br></br><br></br><br></br>
 
-                        <form onSubmit={onSubmit}>  
+                        <form onSubmit={onSubmit}> 
 
-                            <select name="icon" value={icon} onChange={onChange}> 
+                            <select name="icon" value={icon} onChange={onChange} 
+                                    style={{width:"47px", height:"37px", 
+                                        border:"1px solid lightgray", borderRadius:"10px"}}> 
                                 <option value="" selected disabled hidden ></option>
                                 <option value="💖">💖</option>
-                                <option value="2">🧡</option>
-                                <option value="3">💛</option>
-                                <option value="4">💚</option>
-                                <option value="5">💙</option>
-                                <option value="6">💜</option>
-                                <option value="7">🤎</option>
-                                <option value="8">🖤</option>
-                                <option value="9">🤍</option>
-                                <option value="10">💗</option>
+                                <option value="🧡">🧡</option>
+                                <option value="💛">💛</option>
+                                <option value="💚">💚</option>
+                                <option value="💙">💙</option>
+                                <option value="💜">💜</option>
+                                <option value="🤎">🤎</option>
+                                <option value="🖤">🖤</option>
+                                <option value="🤍">🤍</option>
+                                <option value="💗">💗</option>
                             </select> &nbsp;
                             
-                            <input type="text" name="nickname" onChange={onChange} placeholder="nickname" value={nickname} size="20"></input>
+                            <input type="text" name="nickname" onChange={onChange} 
+                                placeholder="nickname" value={nickname} size="20"
+                                style={{width:"170px", height:"32px", 
+                                        border:"1px solid lightgray", borderRadius:"10px"}}></input>
 
-                            <br></br><br></br><br></br><br></br><br></br>
-                            <Worning readOnly={true} type="text" value={worning}/>
+                            <br></br><br></br><br></br>
+                            <Worning readOnly={true} type="text" value={worning} style={{width:"255px"}}/>
+                            <br></br><br></br>
                             <Entrance type="submit">입장</Entrance>
 
                         </form>
