@@ -6,19 +6,21 @@ import User from '../../modules/class/user';
 import RoomList from './RoomList';
 import CreateRoom from './CreateRoom';
 import {io} from 'socket.io-client'
+import { borderRadius } from '@mui/system';
 
 const ENDPOINT = "https://3ba1-211-217-117-91.ngrok.io/";
 const socket = io(ENDPOINT);
 
-const Background = styled.div`
-    width: 100%;
+const Background = styled.div` 
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
     height: 100%;
     background-color: white;
     text-align: center;
-    background: #1F2F47;
+    //background: #1F2F47;
+    background: linear-gradient(180deg, #252F8C 0%, rgba(32, 60, 130, 0.6) 25.52%, rgba(38, 146, 170, 0.76) 66.67%, #843199 100%);
     border: 1px solid #000000;
     box-sizing: border-box;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
@@ -29,7 +31,7 @@ const Header = styled.div`
     justify-content: center;
     align-items: center;
     margin: 0, auto; 
-    width: 75%;
+    width: 100%;
 `
 const Header_div = styled.div`
     display: flex;
@@ -41,6 +43,9 @@ const Go_intro_btn = styled.button`
     margin: 20px auto;
     width: 130px;
     height: 40px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 3px 3px navy;
 `
 const Title = styled.div`
     flex: 1;
@@ -58,27 +63,30 @@ const Room_list = styled.div`
     flex-direction: column;
     padding: 10px;
     border: 2px solid lightgray;
+    border-radius: 5px;
     margin-right: 40px;
     width: 350px;
-    height: 350px;
+    height: 380px;
     color: lightgray;
+    overflow-y: scroll;
 `
 const Room_search = styled.div`
     display: flex;
-    margin: 7px 10px;
+    margin: 10px 10px;
     width: 100%;
 `
 const Room_create = styled.div`
     flex: 1;
     padding: 10px;
     border: 2px solid lightgray;
+    border-radius: 5px;
     width: 350px;
-    height: 350px;
+    height: 380px;
     color: lightgray;
 `
 const Create_setting = styled.div`
     display: flex;
-    margin: 7px 10px;
+    margin: 10px 10px;
     width: 100%;
 `
 const Footer = styled.div`
@@ -90,18 +98,21 @@ const Footer = styled.div`
 `
 const Copyright = styled.div`
     display: flex;
-    margin: 50px 5px 20px 90px;
+    position: absolute;
+    margin-top: 50px;
     font-size: 10px;
     color: lightgray;
 `
 const Volume = styled.div`
     display: flex;
+    position: absolute;
+    width: 400px;
+    margin: 27px 220px;
+    padding: 15px 15px;
     justify-content: center;
     align-items: center;
-    margin: 20px;
-    padding: 10px 10px;
     border: 2px solid lightgray;
-    width: 400px;
+    border-radius: 5px;
     color: lightgray;
 `
 
@@ -184,10 +195,14 @@ function Lobby() {
     //       )
     //     );
     //   };
+
+
     return (
         <Background>
             <Header>
-                <Header_div><Link to="/" style={{color: 'black'}} sizes="40x110"><Go_intro_btn>back</Go_intro_btn></Link></Header_div>
+                <Header_div>
+                    <Link to="/" style={{color: 'black'}} sizes="40x110">
+                        <Go_intro_btn>back</Go_intro_btn></Link></Header_div>
                 <Header_div><Title><img src={logo} width="100%"></img></Title></Header_div>
                 <Header_div></Header_div>
                 <br></br>
@@ -195,14 +210,20 @@ function Lobby() {
             
             <Room_list_create>
                 <Room_list>
-                    <h2>ROOM LIST</h2>
-                    <Room_search><input type='text'></input><button>검색</button></Room_search>
-                    <RoomList rooms={rooms} onEnter={onEnter}/>
+                    <h2 style={{fontSize:"20px"}}>ROOM LIST</h2> 
+                    <Room_search><input type='text'></input>
+                                <button style={{width:"50px", height:"30px",
+                                                backgroundColor:"lightgreen",
+                                                border:"solid 1px #333333",
+                                                borderRadius:"5px"}}
+                                        active={{backgroundColor:"#66CC33"}}>
+                                검색</button></Room_search>
+                    <RoomList rooms={rooms} onEnter={onEnter} />
                 </Room_list>
                 <Room_create>
-                    <h2>ROOM CREATE</h2><br></br>
-                    <CreateRoom
-                        roomname={roomname}
+                    <h2 style={{fontSize:"20px"}}>ROOM CREATE</h2><br></br>
+                    <CreateRoom style={{whitespace: "pre-line"}}
+                        roomname={roomname} 
                         onChange={onChange}
                         onCreate={onCreate}
                     />
@@ -213,8 +234,10 @@ function Lobby() {
                     @Copyright 소프트웨어 공학 1조
                 </Copyright>
                 <Volume>
-                    Input <input type='range'></input>
-                    Output <input type='range'></input>
+                    <a style={{cursor: "pointer"}} onClick={onclick}> Input </a> 
+                    <input type='range'></input> &nbsp; &nbsp;
+                    <a style={{cursor: "pointer"}} onClick={onclick}> Output </a> 
+                    <input type='range'></input>
                 </Volume>
             </Footer>
         </Background>
