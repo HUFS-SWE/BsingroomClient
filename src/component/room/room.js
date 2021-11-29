@@ -215,9 +215,12 @@ function Room() {
 
     useEffect(()=>{
         console.log(user);
+
+        
     })
 
     const exitToLobby = () =>{
+        user.socket.emit('leaveRoom', user.roomInfo)
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
     return (
