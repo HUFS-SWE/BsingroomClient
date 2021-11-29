@@ -121,7 +121,7 @@ function Intro() {
         }
         else{
             setWorning("입장 중입니다.....")
-            navigate('/lobby', {replace:true, state: { nickname : {nickname}, icon : {icon}}})
+            navigate('/lobby', {replace:true, state: { nickname : nickname, icon : icon}})
         }
     }
 
