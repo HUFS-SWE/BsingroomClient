@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
@@ -206,111 +206,98 @@ const ExitButton = styled.button`
     position: relative;
 `
 
+function createReserv(e){
+    e.preventDefault();
 
+}
 function Room() {
-    let nickname;
-    let icon;
+    const {user, setuser} = useContext(UserDispatch);
+    const navigate = useNavigate(); 
 
-    const { user, setuser } = useContext(UserDispatch);
-
-    useEffect(() => {
-        nickname = user.nickname
-        icon = user.icon
-        console.log(user.nickname, user.icon);
+    useEffect(()=>{
+        console.log(user);
     })
 
-    const navigate = useNavigate();
-
-    const onLeave = () => {
-    navigate('/lobby', {replace:true,  state: { nickname : {nickname}, icon : {icon}}}) };
-    
-    console.log(user.nickname)
-    console.log(history.state.usr)
-
+    const exitToLobby = () =>{
+        navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
+    }
     return (
+
         <Background>
+        
+        <Left>
 
-            <Left>
+            <List>
+                <div>
+                예약목록 <br></br><br></br>
+                <textarea cols="25" rows="15" 
+                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
+                        resize: "none"}}>
+                    <input type='text'></input>
+                </textarea>
+                </div>
+            </List>
 
-                <List>
-                    <div>
-                        예약목록 <br></br><br></br>
-                        <textarea cols="25" rows="15"
-                            style={{
-                                backgroundColor: "rgba(255,255,255,0.5)",
-                                resize: "none"
-                            }}>
-                            <input type='text'></input>
-                        </textarea>
-                    </div>
-                </List>
+            <List>
+                <div>
+                참가자<br></br><br></br>
+                <textarea cols="25" rows="15"
+                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
+                        borderColor: "white",
+                        resize: "none"}}>
+                    <input type='text'></input></textarea>
+                </div>   
+            </List>
 
-                <List>
-                    <div>
-                        참가자<br></br><br></br>
-                        <textarea cols="25" rows="15"
-                            style={{
-                                backgroundColor: "rgba(255,255,255,0.5)",
-                                borderColor: "white",
-                                resize: "none"
-                            }}>
-                            {user.nickname}</textarea>
-                    </div>
-                </List>
+            <Copyright><center>
+                @Copyright 소프트웨어 공학 1조
+            </center></Copyright>
 
-                <Copyright><center>
-                    @Copyright 소프트웨어 공학 1조
-                </center></Copyright>
+        </Left>
 
-            </Left>
+        <Center>
+            
+            <Roomname>
+                (방제) <ViewTextarea readonly="readonly"></ViewTextarea>
+            </Roomname>
 
-            <Center>
+            
+            <iframe width="400px" height="315px" frameborder='1' border-width='1px' border-color='white' border-style='solid' src="https://www.youtube.com/embed/fF08MR7SvkQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>           
+            
+            <br></br><p>
+                현재곡: <ViewTextarea></ViewTextarea>
+            </p><br></br>
 
-                <Roomname>
-                    {history.state.usr.roomname.roomname} <ViewTextarea readonly="readonly"></ViewTextarea>
-                </Roomname>
+            <ReserveSong>
+                <center>
+                <form onSubmit={createReserv}>
+                    <input type='url' placeholder='반주 URL' 
+                        style={{width: "90%", 
+                                height: "30px", 
+                                position: 'relative', 
+                                top:'20px'}}>
+                    </input>
+                    <SongReserveButton>
+                        <button type='submit' 
+                                style={{width: "60px", height: "30px",
+                                backgroundColor: "#C3FF9E",
+                                border: "solid 1px",
+                                borderRadius: "10px"}}>
+                            예약</button></SongReserveButton>
+                </form>
+                </center>
+            </ReserveSong>
+            
+            <Sound>
+                Input <input type='range'></input>
+                Output <input type='range'></input>
+            </Sound> 
 
+        </Center>
 
-                <iframe width="400px" height="315px" frameborder='1' border-width='1px' border-color='white' border-style='solid' src="https://www.youtube.com/embed/fF08MR7SvkQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-                <br></br><p>
-                    현재곡: <ViewTextarea></ViewTextarea>
-                </p><br></br>
-
-                <ReserveSong>
-                    <center>
-                        <form>
-                            <input type='url' placeholder='반주 URL'
-                                style={{
-                                    width: "90%",
-                                    height: "30px",
-                                    position: 'relative',
-                                    top: '20px'
-                                }}>
-                            </input>
-                            <SongReserveButton>
-                                <button type='submit'
-                                    style={{
-                                        width: "60px", height: "30px",
-                                        backgroundColor: "#C3FF9E",
-                                        border: "solid 1px",
-                                        borderRadius: "10px"
-                                    }}>
-                                    예약</button></SongReserveButton>
-                        </form>
-                    </center>
-                </ReserveSong>
-
-                <Sound>
-                    Input <input type='range'></input>
-                    Output <input type='range'></input>
-                </Sound>
-
-            </Center>
-
-            <Right>
-
-                <NetworkStatus>
+        <Right>
+            
+            <NetworkStatus>
                     (네트워크 신호)
                 </NetworkStatus>
 
@@ -334,28 +321,32 @@ function Room() {
                                 width: "80%",
                                 height: "100%",
                                 resize: "none",
-                                border: "white"
-                            }}>
-                        </textarea>
+                                border: "white"}}>        
+                    </textarea>
 
-                        <button type="submit"
-                            style={{
-                                height: "30px", width: "auto",
-                                backgroundColor: "#11ffee00"
-                            }} >
-                            <img src='../../img/채팅전송버튼.png'
-                                height="15" width="15"></img>
-                        </button>
-                    </form>
-                </ChatInput>
+                    <button type="submit" 
+                        style={{height:"30px", width:"auto",
+                                backgroundColor: "#11ffee00"}} >
+                        <img src='../../img/채팅전송버튼.png' 
+                            height="15" width="15"></img>
+                    </button>
+                </form>
+            </ChatInput>
 
-                <Exit>  
-                    <Leave onLeave={onLeave}/>
+            <Exit>
+                    <ExitButton onClick={exitToLobby} style={{height:"30px", width:"100px",
+                                backgroundColor: "#8F2121",
+                                backgroundRadius: "10px",
+                                border: "solid 1px black",
+                                borderRadius: "10px",
+                                color: "#E88989"
+                                }} >
+                         방 나가기 
+                    </ExitButton>
+            </Exit>
 
-                </Exit>
-
-            </Right>
-
+        </Right>
+        
         </Background>
     )
 }

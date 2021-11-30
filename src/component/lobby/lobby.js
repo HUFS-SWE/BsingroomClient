@@ -8,9 +8,7 @@ import CreateRoom from './CreateRoom';
 import {io} from 'socket.io-client'
 import {UserDispatch} from '../../app.js'
 
-const ENDPOINT = "https://1846-61-253-62-201.ngrok.io/";
-const socket = io(ENDPOINT);
-
+//style 정의
 const Background = styled.div`
     width: 100%;
     display: flex;
@@ -56,7 +54,7 @@ const Room_list_create = styled.div`
 `
 const Room_list = styled.div`
     flex: 1;
-    flex-direction: column;
+    flex-direction: row;
     padding: 10px;
     border: 2px solid lightgray;
     margin-right: 40px;
@@ -106,29 +104,64 @@ const Volume = styled.div`
     color: lightgray;
 `
 
+
+//socket객체 정의
+const ENDPOINT = "https://26ff-61-253-62-201.ngrok.io";
+const socket = io.connect(ENDPOINT);
+
+
+//Lobby 컴포넌트 정의
 function Lobby() {
-    let nickname;
-    let icon;
-    let audioDevice;
 
-    const {user, setuser} = useContext(UserDispatch);
+    var {user, setUser} = useContext(UserDispatch); //User 전역객체 정의 from app.js
+    const navigate = useNavigate(); //react의 redirect함수
 
+    //컴포넌트 마운트 시 한번만 실행. setUser통해 User인스턴스 정의
+    //history객체를 통해 intro에서 submit된 값을 세팅한다.
     useEffect(() => {
-        nickname = history.state.usr.nickname.nickname;
-        icon = history.state.usr.icon.icon;
-        navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: false})
-        .then(function(stream){
-            audioDevice = stream.getTracks()[0].label;
-            setuser(new User(socket, icon, nickname, audioDevice))
-        })
-      }, []);
+        
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: false})
+            .then(function(stream){
+                setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream.getTracks()[0].label))
+                fetchRoom()
+            })
+            
+        
+      }, []); //user객체가 바뀔때마다 실행
+    
     console.log(user)
+
+    //RoomList컴포넌트 관련 상태관리
+    const [rooms, setRooms] = useState([]);
+
+    socket.on('showRoomList', (rooms)=>{
+        let roomList = [];
+        for(var i=0; i<rooms.length; ++i){
+            if(rooms[i]) //if(rooms[i].slice(3)=="room")
+            roomList.push({roomname:rooms[i]}) 
+        }
+        console.log('fetch')
+        setRooms(roomList)
+    })
+
+    const fetchRoom = () => {       //User객체 내부에 room정보를 업데이트한다.
+        socket.emit("fetchRoom")
+        
+    };
+
+    const onEnter = (roomname) => {
+        user.joinRoom(roomname);
+        navigate('/room',{replace:true})
+    }
+
+    //CreateRoom컴포넌트 관련 상태관리
     const [inputs, setInputs] = useState({
         roomname: '',
     });
     const { roomname } = inputs;
+
     const onChange = e => {
         const { name, value } = e.target;
         setInputs({
@@ -136,46 +169,16 @@ function Lobby() {
             [name]: value
         });
     };
-    const [rooms, setRooms] = useState([
-        {
-          id: 1,
-          roomname: 'velopert',
-        //   email: 'public.velopert@gmail.com',
-        //   active: true
-        },
-        {
-          id: 2,
-          roomname: 'tester',
-        //   email: 'tester@example.com',
-        //   active: false
-        },
-        {
-          id: 3,
-          roomname: 'liz',
-        //   email: 'liz@example.com',
-        //   active: false
-        }
-      ]);
 
-    const nextId = useRef(4);
-    const onCreate = () => {
-        const room = {
-            id: nextId.current,
-            roomname
-            
-        };
-        setRooms(rooms.concat(room));
-
-        setInputs({
-            roomname: ''
-        });
-        nextId.current += 1;
+    const onCreate = () => {        //'방만들기' 클릭 시 실행
+        user.joinRoom("room_"+roomname)
+        navigate('/room',{replace:true})
     };
-    const navigate = useNavigate();
-    const onEnter = roomname => {
+
+
     // user.id 가 파라미터로 일치하지 않는 원소만 추출해서 새로운 배열을 만듬
     // = user.id 가 id 인 것을 제거함
-    navigate('/room', {replace:true}) };
+    //navigate('/room', {replace:true, state : {roomname : {roomname} }}) };
     // const onToggle = id => {
     //     setUsers(
     //       users.map(user =>
@@ -183,8 +186,6 @@ function Lobby() {
     //       )
     //     );
     //   };
-
-
     return (
         <Background>
             <Header>
@@ -197,7 +198,10 @@ function Lobby() {
             <Room_list_create>
                 <Room_list>
                     <h2>ROOM LIST</h2>
-                    <Room_search><input type='text'></input><button>검색</button></Room_search>
+                    <div style={{display:'flex'}}>
+                    <div style={{flex:2}}><input type='text'></input><button>검색</button></div>
+                    <div style={{flex:1}}><button onClick={fetchRoom}>새로고침</button></div>
+                    </div>
                     <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_list>
                 <Room_create>
