@@ -226,7 +226,7 @@ function Room() {
         .then((result)=>{
             console.log(result)
             connection.setLocalDescription(result)
-            user.socket.emit("offer", result, user.roominfo)
+            user.socket.emit("offer", result, user.roomInfo)
         })
 
         user.socket.on("offer", async(offer) => {
@@ -235,7 +235,7 @@ function Room() {
             .then((result)=>{
                 console.log(result)
                 connection.setLocalDescription(result);
-                user.socket.emit("answer", result, user.roominfo);
+                user.socket.emit("answer", result, user.roomInfo);
             })
           });
 
@@ -245,7 +245,7 @@ function Room() {
         });
 
         connection.addEventListener("icecandidate", (data)=>{
-            user.socket.emit("ice", data.candidate, user.roominfo)
+            user.socket.emit("ice", data.candidate, user.roomInfo)
         })
         
         connection.addEventListener("addStream", (data)=>{
@@ -266,7 +266,7 @@ function Room() {
         connection.createOffer()
         .then((result)=>{
             connection.setLocalDescription(result)
-            socket.emit("offer", result, user.roominfo)
+            socket.emit("offer", result, user.roomInfo)
         })
     }
 
