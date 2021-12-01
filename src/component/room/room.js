@@ -12,8 +12,8 @@ const Background = styled.div`
     flex-direction: row;
     width: 100%;
     height: 100%;
-    //background: linear-gradient(180deg, #252F8C 0%, rgba(32, 60, 130, 0.6) 25.52%, rgba(38, 146, 170, 0.76) 66.67%, #843199 100%);
-    background: linear-gradient(180deg, #27258C 0%, rgba(32, 60, 130, 0.94) 31.25%, rgba(66, 149, 168, 0.81) 64.58%, rgba(119, 132, 41, 0.76) 95.31%);
+    background: linear-gradient(180deg, #252F8C 0%, rgba(32, 60, 130, 0.6) 25.52%, rgba(38, 146, 170, 0.76) 66.67%, #843199 100%);
+    //background: linear-gradient(180deg, #27258C 0%, rgba(32, 60, 130, 0.94) 31.25%, rgba(66, 149, 168, 0.81) 64.58%, rgba(119, 132, 41, 0.76) 95.31%);
     box-sizing: border-box;
 `
 
@@ -22,9 +22,7 @@ const Left = styled.div`
     display:flex;
     flex-direction: column;
     flex:1;
-    width: 100%auto;
-    height: 100%auto;
-    width: 25%;
+    width: 100%;
     height: 100%;
     font-size: 1em;
     color: white;
@@ -66,9 +64,9 @@ const List = styled.div`
     //height: auto;
     margin: 0.25em;
     padding: 0.7em 0.7em;
-    border: 2px solid palevioletred;
-    border-radius: 1px;
-    border-color: black;
+    border: 1px solid palevioletred;
+    border-color: lightgray;
+    border-radius: 10px;
     background-color:rgba(255, 255, 255, 0.1);
     box-sizing: content-box;
 `
@@ -116,9 +114,9 @@ const ReserveSong = styled.div`
     height: 20%;
     margin: 0.25em;
     padding: 0.25em 0.25em;
-    border: 2px solid palevioletred;
-    border-radius: 1px;
-    border-color: black;
+    border: 1px solid palevioletred;
+    border-color: lightgray;
+    border-radius: 10px;
     background-color:rgba(255, 255, 255, 0.1);
 `
 
@@ -138,9 +136,9 @@ const Sound = styled.div`
     height: auto;
     margin: 0.25em;
     padding: 0.25em 0.25em;
-    border: 2px solid palevioletred;
-    border-radius: 1px;
-    border-color: black;
+    border: 1px solid palevioletred;
+    border-color: lightgray;
+    border-radius: 10px;
     background-color:rgba(255, 255, 255, 0.1);
 `
 
@@ -153,24 +151,24 @@ const NetworkStatus = styled.div`
     height: auto;
     margin: 0.25em;
     padding: 0.7em 0.7em;
-    border: 2px solid palevioletred;
-    border-radius: 1px;
-    border-color: black;
+    border: 1px solid palevioletred;
+    border-color: lightgray;
+    border-radius: 10px;
     background-color:rgba(255, 255, 255, 0.1);
 `
 
 const Chatting = styled.div`
     /* 채팅 박스 */
     display: flex;
-    flex:8;
+    flex: 8;
     position: relative;
     width: auto;
     height: auto;
     margin: 0.25em;
     padding: 0.7em 0.7em;
-    border: 2px solid palevioletred;
-    border-radius: 1px;
-    border-color: black;
+    border: 1px solid palevioletred;
+    border-color: lightgray;
+    border-radius: 10px;
     word-break:break-all;
     background-color:rgba(255, 255, 255, 0.1);
 `
@@ -185,9 +183,9 @@ const ChatInput = styled.div`
     height: auto;
     margin: 0.25em;
     padding: 0.7em 0.7em;
-    border: 2px solid palevioletred;
-    border-radius: 1px;
-    border-color: black;
+    border: 1px solid palevioletred;
+    border-color: lightgray;
+    border-radius: 10px;
     background-color:rgba(255, 255, 255, 0.1);
     word-break:break-all;
 `
@@ -204,6 +202,8 @@ const Exit = styled.div`
 const ExitButton = styled.button`
     justify-content: center;
     position: relative;
+    cursor: pointer;
+    box-shadow: 3px 3px navy;
 `
 
 function createReserv(e){
@@ -216,9 +216,12 @@ function Room() {
 
     useEffect(()=>{
         console.log(user);
+
+        
     })
 
     const exitToLobby = () =>{
+        user.socket.emit('leaveRoom', user.roomInfo)
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
     return (
@@ -257,12 +260,18 @@ function Room() {
 
         <Center>
             
-            <Roomname>
-                (방제) <ViewTextarea readonly="readonly"></ViewTextarea>
-            </Roomname>
+            <br></br><p>
+                (방제) <ViewTextarea></ViewTextarea>
+            </p><br></br>
 
-            
-            <iframe width="400px" height="315px" frameborder='1' border-width='1px' border-color='white' border-style='solid' src="https://www.youtube.com/embed/fF08MR7SvkQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>           
+            <iframe width="100%" height="300px" 
+                    frameborder='1' border-width='1px' 
+                    border-color='white' border-style='solid' 
+                    src="https://www.youtube.com/embed/fF08MR7SvkQ" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+            </iframe>           
             
             <br></br><p>
                 현재곡: <ViewTextarea></ViewTextarea>
@@ -289,7 +298,7 @@ function Room() {
             </ReserveSong>
             
             <Sound>
-                Input <input type='range'></input>
+                Input <input type='range'></input> &nbsp; &nbsp;
                 Output <input type='range'></input>
             </Sound> 
 
