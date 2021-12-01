@@ -214,14 +214,17 @@ function Room() {
     const navigate = useNavigate(); 
 
     useEffect(()=>{
-        console.log(user)
+        let audioCtx = new AudioContext();
+
         let connection = new RTCPeerConnection();
+
         user.mediaStream.getTracks().forEach(track =>{
             connection.addTrack(track, user.mediaStream)
         })
         
         connection.createOffer()
         .then((result)=>{
+            console.log(result)
             connection.setLocalDescription(result)
             user.socket.emit("offer", result, user.roominfo)
         })
@@ -247,6 +250,10 @@ function Room() {
         
         connection.addEventListener("addStream", (data)=>{
             //audio.srcObject = data.stream
+            audioCtx.createMediaStreamSource(data.mediaStream)
+            let gainNode = audioCtx.createGain();
+            let gainConnected = source.connect(gainNode);
+            gainConnected.connect(audioCtx.destination);
             console.log(data)
         })
         

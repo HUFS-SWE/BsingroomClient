@@ -116,7 +116,7 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "localhost:8000";
+const ENDPOINT = "https://bsingroom.loca.lt";
 const socket = io.connect(ENDPOINT);
 
 
