@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
@@ -214,6 +214,8 @@ function Room() {
     const navigate = useNavigate(); 
 
     useEffect(()=>{
+        const audio = useRef();
+
         let audioCtx = new AudioContext();
 
         let connection = new RTCPeerConnection();
@@ -249,8 +251,8 @@ function Room() {
         })
         
         connection.addEventListener("addStream", (data)=>{
-            //audio.srcObject = data.stream
-            audioCtx.createMediaStreamSource(data.mediaStream)
+            audio.srcObject = data.stream;
+            audioCtx.createMediaStreamSource(data.mediaStream);
             let gainNode = audioCtx.createGain();
             let gainConnected = source.connect(gainNode);
             gainConnected.connect(audioCtx.destination);
@@ -343,6 +345,7 @@ function Room() {
                                 borderRadius: "10px"}}>
                             예약</button></SongReserveButton>
                 </form>
+                <audio ref={audio} />
                 </center>
             </ReserveSong>
             
