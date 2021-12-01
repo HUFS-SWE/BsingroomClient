@@ -214,44 +214,48 @@ function Room() {
     const navigate = useNavigate(); 
 
     useEffect(()=>{
-
+        console.log(user)
         let connection = new RTCPeerConnection();
-
-        connection.addTrack(track, user.mediaStream)
+        user.mediaStream.getTracks().forEach(track =>{
+            connection.addTrack(track, user.mediaStream)
+        })
+        
         connection.createOffer()
         .then((result)=>{
             connection.setLocalDescription(result)
-            socket.emit("offer", result, user.roominfo)
+            user.socket.emit("offer", result, user.roominfo)
         })
 
-        socket.on("offer", async(offer) => {
+        user.socket.on("offer", async(offer) => {
             connection.setRemoteDescription(offer);
             connection.createAnswer()
             .then((result)=>{
                 console.log(result)
                 connection.setLocalDescription(result);
-                socket.emit("answer", result, user.roominfo);
+                user.socket.emit("answer", result, user.roominfo);
             })
           });
 
-        socket.on("answer", (answer) => {
+        user.socket.on("answer", (answer) => {
         console.log(answer)
         connection.setRemoteDescription(answer);
         });
 
         connection.addEventListener("icecandidate", (data)=>{
-            socket.emit("ice", data.candidate, user.roominfo)
+            user.socket.emit("ice", data.candidate, user.roominfo)
         })
         
         connection.addEventListener("addStream", (data)=>{
-            audio.srcObject = data.stream
-            console.log(data);
+            //audio.srcObject = data.stream
+            console.log(data)
         })
         
     })
 
     const audioConnect = () =>{
-        connection.addTrack(track, user.mediaStream)
+        user.mediaStream.getTracks().forEach(track =>{
+            connection.addTrack(track, user.mediaStream)
+        })
         connection.createOffer()
         .then((result)=>{
             connection.setLocalDescription(result)
