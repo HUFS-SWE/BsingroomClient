@@ -214,10 +214,50 @@ function Room() {
     const navigate = useNavigate(); 
 
     useEffect(()=>{
-        console.log(user);
 
+        let connection = new RTCPeerConnection();
+
+        connection.addTrack(track, user.mediaStream)
+        connection.createOffer()
+        .then((result)=>{
+            connection.setLocalDescription(result)
+            socket.emit("offer", result, user.roominfo)
+        })
+
+        socket.on("offer", async(offer) => {
+            connection.setRemoteDescription(offer);
+            connection.createAnswer()
+            .then((result)=>{
+                console.log(result)
+                connection.setLocalDescription(result);
+                socket.emit("answer", result, user.roominfo);
+            })
+          });
+
+        socket.on("answer", (answer) => {
+        console.log(answer)
+        connection.setRemoteDescription(answer);
+        });
+
+        connection.addEventListener("icecandidate", (data)=>{
+            socket.emit("ice", data.candidate, user.roominfo)
+        })
+        
+        connection.addEventListener("addStream", (data)=>{
+            audio.srcObject = data.stream
+            console.log(data);
+        })
         
     })
+
+    const audioConnect = () =>{
+        connection.addTrack(track, user.mediaStream)
+        connection.createOffer()
+        .then((result)=>{
+            connection.setLocalDescription(result)
+            socket.emit("offer", result, user.roominfo)
+        })
+    }
 
     const exitToLobby = () =>{
         user.socket.emit('leaveRoom', user.roomInfo)
@@ -265,7 +305,7 @@ function Room() {
             <iframe width="100%" height="300px" 
                     frameborder='1' border-width='1px' 
                     border-color='white' border-style='solid' 
-                    src="https://www.youtube.com/embed/fF08MR7SvkQ" 
+                    src="https://www.youtube.com/embed/oyVf7rgBguE" 
                     title="YouTube video player" 
                     frameborder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
