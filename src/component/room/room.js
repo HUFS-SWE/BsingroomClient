@@ -213,8 +213,9 @@ function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
 
+    const audio = document.querySelector('audio');
+    
     useEffect(()=>{
-        const audio = useRef();
 
         let audioCtx = new AudioContext();
 
