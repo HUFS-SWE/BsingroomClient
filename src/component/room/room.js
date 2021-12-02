@@ -214,10 +214,9 @@ function Room() {
     const navigate = useNavigate(); 
 
     const audio = document.querySelector('audio');
-    
-    useEffect(()=>{
+    let audioCtx = new AudioContext();
 
-        let audioCtx = new AudioContext();
+    useEffect(()=>{
 
         let connection = new RTCPeerConnection();
 
@@ -241,19 +240,24 @@ function Room() {
                 user.socket.emit("answer", result, user.roomInfo);
             })
           });
-
+        
         user.socket.on("answer", (answer) => {
         console.log(answer)
         connection.setRemoteDescription(answer);
         });
 
+        user.socket.on("ice", (ice) => {
+            console.log(ice)
+            connection.addIceCandidate("ice");
+          });
+          
         connection.addEventListener("icecandidate", (data)=>{
             user.socket.emit("ice", data.candidate, user.roomInfo)
         })
         
         connection.addEventListener("addStream", (data)=>{
             audio.srcObject = data.stream;
-            audioCtx.createMediaStreamSource(data.mediaStream);
+            audioCtx.createMediaElementSource(audio);
             let gainNode = audioCtx.createGain();
             let gainConnected = source.connect(gainNode);
             gainConnected.connect(audioCtx.destination);
