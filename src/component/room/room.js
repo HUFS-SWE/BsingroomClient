@@ -212,12 +212,11 @@ function createReserv(e){
 function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
-
-    const audio = document.querySelector('audio');
-    let audioCtx = new AudioContext();
+    const audio = useRef();
 
     useEffect(()=>{
-
+        
+        let audioCtx = new AudioContext();
         let connection = new RTCPeerConnection();
 
         user.mediaStream.getTracks().forEach(track =>{
@@ -248,20 +247,20 @@ function Room() {
 
         user.socket.on("ice", (ice) => {
             console.log(ice)
-            connection.addIceCandidate("ice");
+            connection.addIceCandidate(ice);
           });
-          
+
         connection.addEventListener("icecandidate", (data)=>{
+            console.log(data)
             user.socket.emit("ice", data.candidate, user.roomInfo)
         })
         
-        connection.addEventListener("addStream", (data)=>{
-            audio.srcObject = data.stream;
-            audioCtx.createMediaElementSource(audio);
-            let gainNode = audioCtx.createGain();
-            let gainConnected = source.connect(gainNode);
-            gainConnected.connect(audioCtx.destination);
+        connection.addEventListener("addstream", (data)=>{
             console.log(data)
+            let audioCR = audio.current
+            audioCR.srcObject = data.stream;
+            audioCtx.createMediaElementSource(audioCR);
+            audioCR.play();
         })
         
     })
