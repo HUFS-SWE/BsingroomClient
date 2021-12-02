@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
-import {UserDispatch} from '../../app.js'
+import { UserDispatch } from '../../app.js'
+import Leave from './leave';
 
 const Background = styled.div`
     /* 배경 */
@@ -224,6 +225,7 @@ function Room() {
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
     return (
+
         <Background>
         
         <Left>
@@ -306,24 +308,27 @@ function Room() {
             
             <NetworkStatus>
                     (네트워크 신호)
-            </NetworkStatus>
+                </NetworkStatus>
 
-            <Chatting>
-                <p>
-                채팅<br></br><br></br>
-                <textarea cols="25" rows="25"
-                        style={{backgroundColor: "rgb(255,255,255,0.5)", 
-                            resize: "none"}}>
-                        <input type='text'></input>
-                </textarea>
-                </p>
-            </Chatting>
+                <Chatting>
+                    <p>
+                        채팅<br></br><br></br>
+                        <textarea cols="25" rows="25"
+                            style={{
+                                backgroundColor: "rgb(255,255,255,0.5)",
+                                resize: "none"
+                            }}>
+                            <input type='text'></input>
+                        </textarea>
+                    </p>
+                </Chatting>
 
-            <ChatInput>
-                <form>
-                    <textarea type="input" text-overflow="clip" 
-                        style={{width: "80%", 
-                                height: "100%",  
+                <ChatInput>
+                    <form>
+                        <textarea type="input" text-overflow="clip"
+                            style={{
+                                width: "80%",
+                                height: "100%",
                                 resize: "none",
                                 border: "white"}}>        
                     </textarea>
@@ -352,6 +357,7 @@ function Room() {
         </Right>
         
         </Background>
-    )}
+    )
+}
 
 export default Room;

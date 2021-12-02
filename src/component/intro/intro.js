@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import mirrorball from "../../img/mirrorball.png";
 import bchar from "../../img/b대면인트로캐릭터.png";
 import bsing from "../../img/B대면노래방.png";
-import { height } from 'dom-helpers';
-import { borderRadius } from '@mui/system';
+// import { height } from 'dom-helpers';
+// import { borderRadius } from '@mui/system';
 
 
 const Background = styled.div`
