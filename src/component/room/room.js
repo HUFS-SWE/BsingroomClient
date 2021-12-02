@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
@@ -213,12 +213,69 @@ function createReserv(e){
 function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
+    const audio = useRef();
 
     useEffect(()=>{
-        console.log(user);
+        
+        let audioCtx = new AudioContext();
+        let connection = new RTCPeerConnection();
 
+        user.mediaStream.getTracks().forEach(track =>{
+            connection.addTrack(track, user.mediaStream)
+        })
+        
+        connection.createOffer()
+        .then((result)=>{
+            console.log(result)
+            connection.setLocalDescription(result)
+            user.socket.emit("offer", result, user.roomInfo)
+        })
+
+        user.socket.on("offer", async(offer) => {
+            connection.setRemoteDescription(offer);
+            connection.createAnswer()
+            .then((result)=>{
+                console.log(result)
+                connection.setLocalDescription(result);
+                user.socket.emit("answer", result, user.roomInfo);
+            })
+          });
+        
+        user.socket.on("answer", (answer) => {
+        console.log(answer)
+        connection.setRemoteDescription(answer);
+        });
+
+        user.socket.on("ice", (ice) => {
+            console.log(ice)
+            connection.addIceCandidate(ice);
+          });
+
+        connection.addEventListener("icecandidate", (data)=>{
+            console.log(data)
+            user.socket.emit("ice", data.candidate, user.roomInfo)
+        })
+        
+        connection.addEventListener("addstream", (data)=>{
+            console.log(data)
+            let audioCR = audio.current
+            audioCR.srcObject = data.stream;
+            audioCtx.createMediaElementSource(audioCR);
+            audioCR.play();
+        })
         
     })
+
+    const audioConnect = () =>{
+        user.mediaStream.getTracks().forEach(track =>{
+            connection.addTrack(track, user.mediaStream)
+        })
+        connection.createOffer()
+        .then((result)=>{
+            connection.setLocalDescription(result)
+            socket.emit("offer", result, user.roomInfo)
+        })
+    }
 
     const exitToLobby = () =>{
         user.socket.emit('leaveRoom', user.roomInfo)
@@ -267,7 +324,7 @@ function Room() {
             <iframe width="100%" height="300px" 
                     frameborder='1' border-width='1px' 
                     border-color='white' border-style='solid' 
-                    src="https://www.youtube.com/embed/fF08MR7SvkQ" 
+                    src="https://www.youtube.com/embed/oyVf7rgBguE" 
                     title="YouTube video player" 
                     frameborder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
@@ -294,6 +351,7 @@ function Room() {
                                 borderRadius: "10px"}}>
                             예약</button></SongReserveButton>
                 </form>
+                <audio ref={audio} />
                 </center>
             </ReserveSong>
             
