@@ -141,7 +141,7 @@ function Lobby() {
         })
 
         navigator.mediaDevices.getUserMedia({
-            audio: true,
+            audio: { echoCancellation: false },
             video: false})
         .then(function(stream){
             setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream))
