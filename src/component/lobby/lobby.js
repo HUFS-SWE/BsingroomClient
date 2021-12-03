@@ -151,8 +151,9 @@ function Lobby() {
             setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream))
             fetchRoom()
         })
-
-            
+    return ()=>{
+        user.socket.removeAllListeners();
+    }
     },[]);
     
     console.log(user);

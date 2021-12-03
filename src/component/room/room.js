@@ -214,7 +214,9 @@ function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
     const video = useRef(null);
-
+    video.current.onloadedmetadata = function(e) {
+        video.current.play();
+    };
     useEffect(()=>{
 
         //RTC연결
@@ -224,24 +226,12 @@ function Room() {
                 {
                     urls: [
                         "stun:stun.l.google.com:19302",
-                        "stun:stun1.l.google.com:19302",
-                        "stun:stun2.l.google.com:19302",
-                        "stun:stun3.l.google.com:19302",
-                        "stun:stun4.l.google.com:19302",
                     ]
                 }
             ]
         
         });
         
-        video.current.srcObject = user.mediaStream;
-        video.current.onloadedmetadata = function(e) {
-            video.current.play();
-        };
-        var gainlocalNode = audioCtx.createGain();
-        gainlocalNode.gain.value = 0.5;
-        audioCtx.createMediaStreamSource(user.mediaStream);
-        gainlocalNode.connect(audioCtx.destination);
 
 
         //Youtube API
@@ -262,10 +252,11 @@ function Room() {
         })
 
         user.socket.on("offer", async(offer) => {
+            console.log(offer)
             connection.setRemoteDescription(offer);
             connection.createAnswer()
             .then((result)=>{
-                console.log(result)
+                console.log( "result")
                 connection.setLocalDescription(result);
                 user.socket.emit("answer", result, user.roomInfo);
             })
@@ -287,11 +278,11 @@ function Room() {
         })
         
         connection.addEventListener("addstream", (data)=>{
-            console.log(data)
-            var gainNode = audioCtx.createGain();
-            gainNode.gain.value = 0.5;
-            audioCtx.createMediaStreamSource(data.stream);
-            gainNode.connect(audioCtx.destination);
+            video.current.srcObject = user.mediaStream;
+            var gainlocalNode = audioCtx.createGain();
+            gainlocalNode.gain.value = 0.5;
+            audioCtx.createMediaStreamSource(user.mediaStream);
+            gainlocalNode.connect(audioCtx.destination);
         })
 
         //Room event 등록
