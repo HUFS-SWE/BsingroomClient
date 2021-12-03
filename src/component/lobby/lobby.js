@@ -151,6 +151,10 @@ function Lobby() {
             setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream))
             fetchRoom()
         })
+
+        return function cleanUP(){
+            socket.removeAllListeners();
+        }
             
     },[]);
     
@@ -185,6 +189,7 @@ function Lobby() {
     };
 
     const onCreate = () => {        //'방만들기' 클릭 시 실행
+        user.host = true;
         user.joinRoom("room_"+roomname)
         navigate('/room',{replace:true})
     };

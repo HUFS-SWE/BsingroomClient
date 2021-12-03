@@ -206,19 +206,36 @@ const ExitButton = styled.button`
     box-shadow: 3px 3px navy;
 `
 
-function createReserv(e){
-    e.preventDefault();
 
-}
+let songList = [];
+
+//RTC연결
+
 function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
     const audio = useRef();
-
+    let audioCtx = new AudioContext();
+    let connection = new RTCPeerConnection({
+        iceServers: [
+            {
+                urls: [
+                    "stun:stun.l.google.com:19302",
+                    "stun:stun1.l.google.com:19302",
+                    "stun:stun2.l.google.com:19302",
+                    "stun:stun3.l.google.com:19302",
+                    "stun:stun4.l.google.com:19302",
+                ]
+            }
+        ]
+    
+    });
     useEffect(()=>{
-        
-        let audioCtx = new AudioContext();
-        let connection = new RTCPeerConnection();
+        //Youtube API
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
         user.mediaStream.getTracks().forEach(track =>{
             connection.addTrack(track, user.mediaStream)
@@ -263,22 +280,45 @@ function Room() {
             audioCtx.createMediaElementSource(audioCR);
             audioCR.play();
         })
+
+        //Room event 등록
+
+        user.socket.on("breakRoom",()=>{
+            exitToLobby()
+        })
+
+        return function cleanUP(){
+            socket.removeAllListeners();
+        }
         
     })
 
-    const audioConnect = () =>{
-        user.mediaStream.getTracks().forEach(track =>{
-            connection.addTrack(track, user.mediaStream)
-        })
-        connection.createOffer()
-        .then((result)=>{
-            connection.setLocalDescription(result)
-            socket.emit("offer", result, user.roomInfo)
-        })
-    }
+    useEffect(()=>{
 
+    },[])
+
+    const createReserv = (e) =>{
+        e.preventDefault();
+        //https://www.youtube.com/watch?v=3duS7p-H6KQ
+        // https://www.youtube.com/watch?v=gX0rdGE8tW8
+        const url = e.target.url;
+        const song = new YT.Player('player', {
+            height: '300px',
+            width: '100%',
+            videoId: 'gX0rdGE8tW8',
+            events: {
+                'onReady': (event)=>{
+                    event.target.playVideo();
+                }
+            }
+          });
+        console.log(song)
+        //user.socket.emit('createReserv', url);
+    }
     const exitToLobby = () =>{
-        user.socket.emit('leaveRoom', user.roomInfo)
+        user.socket.emit('leaveRoom', user.roomInfo, user.host);
+        connection.close();
+        user.host=false;
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
     return (
@@ -321,14 +361,8 @@ function Room() {
                 (방제) <ViewTextarea></ViewTextarea>
             </p><br></br>
 
-            <iframe width="100%" height="300px" 
-                    frameborder='1' border-width='1px' 
-                    border-color='white' border-style='solid' 
-                    src="https://www.youtube.com/embed/oyVf7rgBguE" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-            </iframe>           
+            <div width="100%" height="300px" id='player'>
+            </div>           
             
             <br></br><p>
                 현재곡: <ViewTextarea></ViewTextarea>
@@ -341,7 +375,8 @@ function Room() {
                         style={{width: "90%", 
                                 height: "30px", 
                                 position: 'relative', 
-                                top:'20px'}}>
+                                top:'20px'}}
+                        name = "url">
                     </input>
                     <SongReserveButton>
                         <button type='submit' 
