@@ -209,28 +209,41 @@ const ExitButton = styled.button`
 
 let songList = [];
 
-//RTC연결
 
 function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
-    const audio = useRef();
-    let audioCtx = new AudioContext();
-    let connection = new RTCPeerConnection({
-        iceServers: [
-            {
-                urls: [
-                    "stun:stun.l.google.com:19302",
-                    "stun:stun1.l.google.com:19302",
-                    "stun:stun2.l.google.com:19302",
-                    "stun:stun3.l.google.com:19302",
-                    "stun:stun4.l.google.com:19302",
-                ]
-            }
-        ]
-    
-    });
+    const video = useRef(null);
+
     useEffect(()=>{
+
+        //RTC연결
+        let audioCtx = new AudioContext();
+        let connection = new RTCPeerConnection({
+            iceServers: [
+                {
+                    urls: [
+                        "stun:stun.l.google.com:19302",
+                        "stun:stun1.l.google.com:19302",
+                        "stun:stun2.l.google.com:19302",
+                        "stun:stun3.l.google.com:19302",
+                        "stun:stun4.l.google.com:19302",
+                    ]
+                }
+            ]
+        
+        });
+        
+        video.current.srcObject = user.mediaStream;
+        video.current.onloadedmetadata = function(e) {
+            video.current.play();
+        };
+        var gainlocalNode = audioCtx.createGain();
+        gainlocalNode.gain.value = 0.5;
+        audioCtx.createMediaStreamSource(user.mediaStream);
+        gainlocalNode.connect(audioCtx.destination);
+
+
         //Youtube API
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
@@ -275,10 +288,10 @@ function Room() {
         
         connection.addEventListener("addstream", (data)=>{
             console.log(data)
-            let audioCR = audio.current
-            audioCR.srcObject = data.stream;
-            audioCtx.createMediaElementSource(audioCR);
-            audioCR.play();
+            var gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0.5;
+            audioCtx.createMediaStreamSource(data.stream);
+            gainNode.connect(audioCtx.destination);
         })
 
         //Room event 등록
@@ -287,15 +300,16 @@ function Room() {
             exitToLobby()
         })
 
-        return function cleanUP(){
-            socket.removeAllListeners();
+        return ()=>{
+            user.socket.removeAllListeners();
+            connection.close();
+            connection = null;
+            audioCtx = null;
+            console.log(connection, audioCtx)
         }
-        
-    })
-
-    useEffect(()=>{
-
+    
     },[])
+
 
     const createReserv = (e) =>{
         e.preventDefault();
@@ -315,12 +329,13 @@ function Room() {
         console.log(song)
         //user.socket.emit('createReserv', url);
     }
+
     const exitToLobby = () =>{
         user.socket.emit('leaveRoom', user.roomInfo, user.host);
-        connection.close();
         user.host=false;
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
+
     return (
 
         <Background>
@@ -362,6 +377,7 @@ function Room() {
             </p><br></br>
 
             <div width="100%" height="300px" id='player'>
+                <video ref={video}></video>
             </div>           
             
             <br></br><p>
@@ -386,7 +402,6 @@ function Room() {
                                 borderRadius: "10px"}}>
                             예약</button></SongReserveButton>
                 </form>
-                <audio ref={audio} />
                 </center>
             </ReserveSong>
             

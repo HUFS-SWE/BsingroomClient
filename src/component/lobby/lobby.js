@@ -152,9 +152,6 @@ function Lobby() {
             fetchRoom()
         })
 
-        return function cleanUP(){
-            socket.removeAllListeners();
-        }
             
     },[]);
     
