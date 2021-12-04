@@ -214,10 +214,9 @@ function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
     const video = useRef(null);
-    let memberList = [];
     
     useEffect(()=>{
-
+        
         //RTC연결
         let audioCtx = new AudioContext();
         let connection = new RTCPeerConnection({
@@ -243,11 +242,15 @@ function Room() {
 
         user.socket.emit('fetchMember', user.roomInfo)
         
-        user.socket.on('showMemberList', (arr)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
-            for(const value of arr){
+        user.socket.on('showMemberList', (data)=>{
+            console.log(data)
+            let memberList = [];
+            for(const value of data){
                 if (value)
-                memberList.push(value) 
+                memberList.push(value.nickname) 
             }
+            console.log(memberList)
+            setMembers(memberList)
         })
     
 
@@ -310,18 +313,8 @@ function Room() {
             audioCtx = null;
         }
     }, [])
-
-    useEffect(()=>{
-        setMembers(memberList)
-    }, [memberList]);
-    
    
-    const [membersss, setMembers] = useState([]);
-
-
-    useEffect(()=>{
-        setMembers(memberList)
-    }, [memberList]);
+    const [members, setMembers] = useState([]);
     
 
     const createReserv = (e) =>{
@@ -344,13 +337,8 @@ function Room() {
     }
 
     const exitToLobby = () =>{
-<<<<<<< HEAD
-        user.socket.emit('leaveRoom', user.roomInfo, user.host);
         user.host=false;
-=======
         user.socket.emit('leaveRoom', user.roomInfo)
-        user.socket.emit('fetchMember', user.roomInfo)
->>>>>>> d3bb76f2a4f43b13cdc346d459815932d75ce272
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
 
@@ -374,7 +362,7 @@ function Room() {
             <List>
                 <div>
                 참가자<br></br><br></br>
-                {membersss}
+                {members}
                 {/* <textarea cols="25" rows="15"
                         style={{backgroundColor: "rgba(255,255,255,0.5)", 
                         borderColor: "white",

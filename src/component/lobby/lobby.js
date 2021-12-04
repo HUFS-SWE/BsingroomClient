@@ -116,11 +116,8 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "https://dull-catfish-64.loca.lt/";
+const ENDPOINT = "https://stupid-owl-89.loca.lt/";
 const socket = io.connect(ENDPOINT);
-socket.on("hello",()=>{
-    socket.emit("getNickname",history.state.usr.nickname )
-})
 
 //Lobby 컴포넌트 정의
 function Lobby() {
@@ -132,7 +129,6 @@ function Lobby() {
     //history객체를 통해 intro에서 submit된 값을 세팅한다.
     useEffect(() => {
 
-        
         socket.on('showRoomList', (rooms)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.
             let roomList = [];
             for(var i=0; i<rooms.length; ++i){
@@ -144,16 +140,20 @@ function Lobby() {
             setRooms(roomList)
         })
 
+
         navigator.mediaDevices.getUserMedia({
             audio: { echoCancellation: false },
             video: false})
         .then(function(stream){
             setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream))
-            fetchRoom()
+            fetchRoom();
         })
-    return ()=>{
-        user.socket.removeAllListeners();
-    }
+
+
+        return ()=>{
+            socket.removeAllListeners();
+        }
+
     },[]);
     
     console.log(user);
@@ -166,6 +166,7 @@ function Lobby() {
         socket.emit("fetchRoom")
         
     };
+    
 
     const onEnter = (roomname) => {
         user.joinRoom(roomname);
