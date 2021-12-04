@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useRef } from 'react';
+import React, {useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
@@ -214,6 +214,7 @@ function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
     const video = useRef(null);
+    let memberList = [];
     
     useEffect(()=>{
 
@@ -223,19 +224,32 @@ function Room() {
             iceServers: [
                 {
                     urls: [
-                        "stun:stun.l.google.com:19302",
+                        "stun:stun1.l.google.com:19302",
+                        "stun:stun2.l.google.com:19302",
+                        "stun:stun3.l.google.com:19302",
+                        "stun:stun4.l.google.com:19302",
                     ]
                 }
             ]
-        
+    
         });
-
 
         //Youtube API
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                        
+
+        user.socket.emit('fetchMember', user.roomInfo)
+        
+        user.socket.on('showMemberList', (arr)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
+            for(const value of arr){
+                if (value)
+                memberList.push(value) 
+            }
+        })
+    
 
         user.mediaStream.getTracks().forEach(track =>{
             connection.addTrack(track, user.mediaStream)
@@ -288,14 +302,27 @@ function Room() {
         user.socket.on("breakRoom",()=>{
             exitToLobby()
         })
+
         return ()=>{
             user.socket.removeAllListeners();
             connection.close();
             connection = null;
             audioCtx = null;
         }
-    },[])
+    }, [])
 
+    useEffect(()=>{
+        setMembers(memberList)
+    }, [memberList]);
+    
+   
+    const [membersss, setMembers] = useState([]);
+
+
+    useEffect(()=>{
+        setMembers(memberList)
+    }, [memberList]);
+    
 
     const createReserv = (e) =>{
         e.preventDefault();
@@ -317,8 +344,13 @@ function Room() {
     }
 
     const exitToLobby = () =>{
+<<<<<<< HEAD
         user.socket.emit('leaveRoom', user.roomInfo, user.host);
         user.host=false;
+=======
+        user.socket.emit('leaveRoom', user.roomInfo)
+        user.socket.emit('fetchMember', user.roomInfo)
+>>>>>>> d3bb76f2a4f43b13cdc346d459815932d75ce272
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
 
@@ -342,11 +374,13 @@ function Room() {
             <List>
                 <div>
                 참가자<br></br><br></br>
-                <textarea cols="25" rows="15"
+                {membersss}
+                {/* <textarea cols="25" rows="15"
                         style={{backgroundColor: "rgba(255,255,255,0.5)", 
                         borderColor: "white",
                         resize: "none"}}>
-                    <input type='text'></input></textarea>
+                            {membersss}
+                    </textarea> */}
                 </div>   
             </List>
 
