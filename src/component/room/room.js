@@ -275,8 +275,8 @@ function Room() {
         }
     }, [])
 
-    const setOffer=(offer, senderID)=>{
-        let offerConn = connectinos.find(data=> data.id == senderID).connection
+    const setOffer = (offer, senderID) => {
+        let offerConn = connections.find(data=> data.id == senderID).connection
         offerConn.setRemoteDescription(offer);
         offerConn.createAnswer()
         .then((result)=>{
@@ -286,12 +286,12 @@ function Room() {
         })
     }
 
-    const setAnswer = (answer, senderID) =>{
+    const setAnswer = (answer, senderID) => {
         let answerConn = connections.find(data=> data.id == senderID).connection
         answerConn.setRemoteDescription(answer);
     }
     
-    const setIce = () =>{
+    const setIce = (ice, senderID) =>{
         let iceConn = connections.find(data=> data.id == senderID).connection
         iceConn.addIceCandidate(ice);
     }
