@@ -220,7 +220,7 @@ function Room() {
     const video = useRef(null);
     
     let audioCtx = new AudioContext();
-    
+
     useEffect(()=>{
 
         //Youtube API
@@ -249,10 +249,25 @@ function Room() {
 
         user.socket.on("showMemberList", (data)=>{
             if(data.length>members){
-                addAudioConnect(data);
+                addAudioConnect(false,data);
             }
             else{
-                audioDisConnect(data);
+                audioDisConnect(false,data);
+            }
+            let memberList = [];
+            for(const value of data){
+                memberList.push(value.nickname) 
+            }
+            console.log(memberList)
+            setMembers(memberList)
+        })
+
+        user.socket.on("answerConnect",(data)=>{
+            if(data.length>members){
+                addAudioConnect(true,data);
+            }
+            else{
+                audioDisConnect(true,data);
             }
             let memberList = [];
             for(const value of data){
@@ -296,7 +311,7 @@ function Room() {
         iceConn.addIceCandidate(ice);
     }
 
-    const addAudioConnect=(data)=>{
+    const addAudioConnect=(join, data)=>{
 
         console.log(members, data)
 
@@ -320,20 +335,21 @@ function Room() {
                 user.mediaStream.getTracks().forEach(track =>{
                     connection.addTrack(track, user.mediaStream)
                 })
-
+                if(join){
                 connection.createOffer()
                 .then((result)=>{
                     console.log(result)
                     connection.setLocalDescription(result)
                     user.socket.emit("offer", result, value.id)
                 })
-
+            }
                 connection.addEventListener("icecandidate", (ice)=>{
                     console.log(ice)
                     user.socket.emit("ice", ice.candidate, value.id )
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
+                    console.log("addStream");
                     video.current.srcObject = data.stream;
                     var gainlocalNode = audioCtx.createGain();
                     gainlocalNode.gain.value = 0.5;
