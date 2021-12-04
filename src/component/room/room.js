@@ -253,7 +253,7 @@ function Room() {
             connection.setRemoteDescription(offer);
             connection.createAnswer()
             .then((result)=>{
-                console.log( "result")
+                console.log(connection)
                 connection.setLocalDescription(result);
                 user.socket.emit("answer", result, user.roomInfo);
             })
@@ -288,15 +288,12 @@ function Room() {
         user.socket.on("breakRoom",()=>{
             exitToLobby()
         })
-
         return ()=>{
             user.socket.removeAllListeners();
             connection.close();
             connection = null;
             audioCtx = null;
-            console.log(connection, audioCtx)
         }
-    
     },[])
 
 
