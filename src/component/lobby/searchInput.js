@@ -11,14 +11,14 @@ const SearchButton = styled.button`
     cursor: pointer;
     width: 50px;
     height: 27px;
-    background-color: #EEEEEE;
+    background-color: #86E57F;
     border: solid 1px #777777;
     border-radius: 5px;
     box-shadow: 2px 2px navy;
     &:hover {
         background: lightgreen;}
     &:active {
-        background: #EEEEEE;}
+        background: #59DA50;}
 `
 
 const onclick = (searchinput) => {

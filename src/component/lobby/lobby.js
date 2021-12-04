@@ -232,7 +232,10 @@ function Lobby() {
                     <div style={{display:'flex'}}>
                         <div style={{flex:2}}>
                         <SearchInput type='text' onClick={Search}/></div>
-                        <div style={{flex:1}}><button onClick={fetchRoom}>새로고침</button></div>
+                        <div style={{flex:1}}>
+                            <button onClick={fetchRoom}
+                                style={{cursor:"pointer"}}
+                            >새로고침</button></div>
                     </div><br></br>
                     <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_list>
