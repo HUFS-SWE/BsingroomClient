@@ -219,10 +219,9 @@ function Room() {
 
     const video = useRef(null);
     
+    let audioCtx = new AudioContext();
+    
     useEffect(()=>{
-        
-        //RTC연결
-        let audioCtx = new AudioContext();
 
         //Youtube API
         var tag = document.createElement('script');
@@ -232,7 +231,7 @@ function Room() {
         
         //audio event 등록
         
-        user.socket.on("offer", async(offer, senderID) => {
+        user.socket.on("offer", (offer, senderID) => {
             setOffer(offer, senderID);
           });
         
@@ -275,7 +274,8 @@ function Room() {
         }
     }, [])
 
-    const setOffer = (offer, senderID) => {
+    const setOffer = async (offer, senderID) => {
+        console.log(connections.find(data=> data.id == senderID), senderID)
         let offerConn = connections.find(data=> data.id == senderID).connection
         offerConn.setRemoteDescription(offer);
         offerConn.createAnswer()
