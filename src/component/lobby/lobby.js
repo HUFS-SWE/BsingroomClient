@@ -116,7 +116,7 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "https://bsingroom.loca.lt";
+const ENDPOINT = "https://dull-catfish-64.loca.lt/";
 const socket = io.connect(ENDPOINT);
 socket.on("hello",()=>{
     socket.emit("getNickname",history.state.usr.nickname )

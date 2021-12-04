@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useRef } from 'react';
+import React, {useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
@@ -214,11 +214,33 @@ function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
     const audio = useRef();
-
+    let memberList = [];
     useEffect(()=>{
         
         let audioCtx = new AudioContext();
-        let connection = new RTCPeerConnection();
+        let connection = new RTCPeerConnection({
+            iceServers: [
+                {
+                    urls: [
+                        "stun:stun.l.google.com:19302",
+                        "stun:stun1.l.google.com:19302",
+                        "stun:stun2.l.google.com:19302",
+                        "stun:stun3.l.google.com:19302",
+                        "stun:stun4.l.google.com:19302",
+                    ]
+                }
+            ]
+    
+        });
+
+        user.socket.emit('fetchMember', user.roomInfo)
+        user.socket.on('showMemberList', (arr)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
+            for(const value of arr){
+                if (value)
+                memberList.push(value) 
+            }
+        })
+    
 
         user.mediaStream.getTracks().forEach(track =>{
             connection.addTrack(track, user.mediaStream)
@@ -264,7 +286,14 @@ function Room() {
             audioCR.play();
         })
         
-    })
+    }, [])
+
+    useEffect(()=>{
+        setMembers(memberList)
+    }, [memberList]);
+    
+   
+    const [membersss, setMembers] = useState([]);
 
     const audioConnect = () =>{
         user.mediaStream.getTracks().forEach(track =>{
@@ -279,6 +308,7 @@ function Room() {
 
     const exitToLobby = () =>{
         user.socket.emit('leaveRoom', user.roomInfo)
+        user.socket.emit('fetchMember', user.roomInfo)
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
     return (
@@ -301,11 +331,13 @@ function Room() {
             <List>
                 <div>
                 참가자<br></br><br></br>
-                <textarea cols="25" rows="15"
+                {membersss}
+                {/* <textarea cols="25" rows="15"
                         style={{backgroundColor: "rgba(255,255,255,0.5)", 
                         borderColor: "white",
                         resize: "none"}}>
-                    <input type='text'></input></textarea>
+                            {membersss}
+                    </textarea> */}
                 </div>   
             </List>
 
