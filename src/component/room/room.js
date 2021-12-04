@@ -247,9 +247,9 @@ function Room() {
             answerConn.setRemoteDescription(answer);
         });
 
-        user.socket.on("ice", (ice) => {
-            console.log(ice)
-            connection.addIceCandidate(ice);
+        user.socket.on("ice", (ice, senderID) => {
+            let iceConn = connections.find(data=> data.id == senderID).connection
+            iceConn.addIceCandidate(ice);
           });
 
         //Room event 등록
