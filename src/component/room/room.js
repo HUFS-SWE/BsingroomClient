@@ -5,6 +5,7 @@ import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
+import { stepIconClasses } from '@mui/material';
 
 const Background = styled.div`
     /* 배경 */
@@ -232,24 +233,15 @@ function Room() {
         //audio event 등록
         
         user.socket.on("offer", async(offer, senderID) => {
-            let offerConn = connectinos.find(data=> data.id == senderID).connection
-            offerConn.setRemoteDescription(offer);
-            offerConn.createAnswer()
-            .then((result)=>{
-                console.log(result)
-                offerConn.setLocalDescription(result);
-                user.socket.emit("answer", result, senderID);
-            })
+            setOffer(offer, senderID);
           });
         
         user.socket.on("answer", (answer, senderID) => {
-            let answerConn = connections.find(data=> data.id == senderID).connection
-            answerConn.setRemoteDescription(answer);
+            setAnswer(answer, senderID);
         });
 
         user.socket.on("ice", (ice, senderID) => {
-            let iceConn = connections.find(data=> data.id == senderID).connection
-            iceConn.addIceCandidate(ice);
+            setIce(ice, senderID);
           });
 
         //Room event 등록
@@ -283,6 +275,26 @@ function Room() {
         }
     }, [])
 
+    const setOffer=(offer, senderID)=>{
+        let offerConn = connectinos.find(data=> data.id == senderID).connection
+        offerConn.setRemoteDescription(offer);
+        offerConn.createAnswer()
+        .then((result)=>{
+            console.log(result)
+            offerConn.setLocalDescription(result);
+            user.socket.emit("answer", result, senderID);
+        })
+    }
+
+    const setAnswer = (answer, senderID) =>{
+        let answerConn = connections.find(data=> data.id == senderID).connection
+        answerConn.setRemoteDescription(answer);
+    }
+    
+    const setIce = () =>{
+        let iceConn = connections.find(data=> data.id == senderID).connection
+        iceConn.addIceCandidate(ice);
+    }
 
     const addAudioConnect=(data)=>{
 
