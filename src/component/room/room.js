@@ -207,78 +207,44 @@ const ExitButton = styled.button`
 `
 
 
-let songList = [];
-
-
 function Room() {
-    const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
+
+    const {user, setuser} = useContext(UserDispatch);
+
+    const [members, setMembers] = useState([]);
+    let connections = [];
+    let songList = [];
+
     const video = useRef(null);
     
     useEffect(()=>{
         
         //RTC연결
         let audioCtx = new AudioContext();
-        let connection = new RTCPeerConnection({
-            iceServers: [
-                {
-                    urls: [
-                        "stun:stun1.l.google.com:19302",
-                        "stun:stun2.l.google.com:19302",
-                        "stun:stun3.l.google.com:19302",
-                        "stun:stun4.l.google.com:19302",
-                    ]
-                }
-            ]
-    
-        });
 
         //Youtube API
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-                        
-
-        user.socket.emit('fetchMember', user.roomInfo)
         
-        user.socket.on('showMemberList', (data)=>{
-            console.log(data)
-            let memberList = [];
-            for(const value of data){
-                if (value)
-                memberList.push(value.nickname) 
-            }
-            console.log(memberList)
-            setMembers(memberList)
-        })
-    
-
-        user.mediaStream.getTracks().forEach(track =>{
-            connection.addTrack(track, user.mediaStream)
-        })
+        //audio event 등록
         
-        connection.createOffer()
-        .then((result)=>{
-            console.log(result)
-            connection.setLocalDescription(result)
-            user.socket.emit("offer", result, user.roomInfo)
-        })
-
-        user.socket.on("offer", async(offer) => {
-            console.log(offer)
-            connection.setRemoteDescription(offer);
-            connection.createAnswer()
+        user.socket.on("offer", async(offer, senderID) => {
+            let offerConn = connectinos.find(data=> data.id == senderID).connection
+            offerConn.setRemoteDescription(offer);
+            offerConn.createAnswer()
             .then((result)=>{
-                console.log(connection)
-                connection.setLocalDescription(result);
-                user.socket.emit("answer", result, user.roomInfo);
+                console.log(result)
+                offerConn.setLocalDescription(result);
+                user.socket.emit("answer", result, senderID);
             })
           });
         
-        user.socket.on("answer", (answer) => {
-        console.log(answer)
-        connection.setRemoteDescription(answer);
+        user.socket.on("answer", (answer, senderID) => {
+            let answerConn = connections.find(data=> data.id == senderID).connection
+            answerConn.setRemoteDescription(answer);
         });
 
         user.socket.on("ice", (ice) => {
@@ -286,21 +252,24 @@ function Room() {
             connection.addIceCandidate(ice);
           });
 
-        connection.addEventListener("icecandidate", (data)=>{
-            console.log(data)
-            user.socket.emit("ice", data.candidate, user.roomInfo)
-        })
-        
-        connection.addEventListener("addstream", (data)=>{
-            video.current.srcObject = data.stream;
-            var gainlocalNode = audioCtx.createGain();
-            gainlocalNode.gain.value = 0.5;
-            audioCtx.createMediaStreamSource(data.stream);
-            gainlocalNode.connect(audioCtx.destination);
-            video.current.play();
-        })
-
         //Room event 등록
+
+        user.socket.emit('fetchMember', user.roomInfo)
+
+        user.socket.on("showMemberList", (data)=>{
+            if(data.length>members){
+                addAudioConnect(data);
+            }
+            else{
+                audioDisConnect(data);
+            }
+            let memberList = [];
+            for(const value of data){
+                memberList.push(value.nickname) 
+            }
+            console.log(memberList)
+            setMembers(memberList)
+        })
 
         user.socket.on("breakRoom",()=>{
             exitToLobby()
@@ -313,9 +282,60 @@ function Room() {
             audioCtx = null;
         }
     }, [])
-   
-    const [members, setMembers] = useState([]);
-    
+
+
+    const addAudioConnect=(data)=>{
+
+        console.log(members, data)
+
+        for(const value of data){
+            if(!members.includes(value.nickname)&&value.nickname!=user.nickname){
+                let connection = new RTCPeerConnection({
+                    iceServers: [
+                        {
+                            urls: [
+                                "stun:stun1.l.google.com:19302",
+                                "stun:stun2.l.google.com:19302",
+                                "stun:stun3.l.google.com:19302",
+                                "stun:stun4.l.google.com:19302",
+                            ]
+                        }
+                    ]
+            
+                })
+                connections.push({id:value.id, connection:connection})
+
+                user.mediaStream.getTracks().forEach(track =>{
+                    connection.addTrack(track, user.mediaStream)
+                })
+
+                connection.createOffer()
+                .then((result)=>{
+                    console.log(result)
+                    connection.setLocalDescription(result)
+                    user.socket.emit("offer", result, value.id)
+                })
+
+                connection.addEventListener("icecandidate", (ice)=>{
+                    console.log(ice)
+                    user.socket.emit("ice", ice.candidate, value.id )
+                })
+                
+                connection.addEventListener("addstream", (data)=>{
+                    video.current.srcObject = data.stream;
+                    var gainlocalNode = audioCtx.createGain();
+                    gainlocalNode.gain.value = 0.5;
+                    audioCtx.createMediaStreamSource(data.stream);
+                    gainlocalNode.connect(audioCtx.destination);
+                    video.current.play();
+                })
+            }
+        }
+    }
+
+    const audioDisConnect=(data)=>{
+        console.log(members, data)
+    }
 
     const createReserv = (e) =>{
         e.preventDefault();

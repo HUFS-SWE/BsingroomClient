@@ -116,7 +116,7 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "https://stupid-owl-89.loca.lt/";
+const ENDPOINT = "https://bsingroom2.loca.lt/";
 const socket = io.connect(ENDPOINT);
 
 //Lobby 컴포넌트 정의
