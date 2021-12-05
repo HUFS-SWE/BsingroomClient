@@ -289,6 +289,7 @@ function Room() {
         }
     }, [])
 
+    //Audio connection 함수
     const setOffer = async (offer, senderID) => {
         console.log(connections.find(data=> data.id == senderID), senderID)
         let offerConn = connections.find(data=> data.id == senderID).connection
