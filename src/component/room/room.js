@@ -1,10 +1,11 @@
-import React, { useEffect, useContext, useRef } from 'react';
+import React, {useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
+import { stepIconClasses } from '@mui/material';
 
 const Background = styled.div`
     /* 배경 */
@@ -207,95 +208,148 @@ const ExitButton = styled.button`
 `
 
 
-let songList = [];
-
-
 function Room() {
-    const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
+
+    const {user, setuser} = useContext(UserDispatch);
+
+    const [members, setMembers] = useState([]);
+    let connections = [];
+    let songList = [];
+
     const video = useRef(null);
     
+    let audioCtx = new AudioContext();
+
     useEffect(()=>{
-
-        //RTC연결
-        let audioCtx = new AudioContext();
-        let connection = new RTCPeerConnection({
-            iceServers: [
-                {
-                    urls: [
-                        "stun:stun.l.google.com:19302",
-                    ]
-                }
-            ]
-        
-        });
-
 
         //Youtube API
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        user.mediaStream.getTracks().forEach(track =>{
-            connection.addTrack(track, user.mediaStream)
-        })
         
-        connection.createOffer()
-        .then((result)=>{
-            console.log(result)
-            connection.setLocalDescription(result)
-            user.socket.emit("offer", result, user.roomInfo)
-        })
-
-        user.socket.on("offer", async(offer) => {
-            console.log(offer)
-            connection.setRemoteDescription(offer);
-            connection.createAnswer()
-            .then((result)=>{
-                console.log(connection)
-                connection.setLocalDescription(result);
-                user.socket.emit("answer", result, user.roomInfo);
-            })
+        //audio event 등록
+        
+        user.socket.on("offer", (offer, senderID) => {
+            setOffer(offer, senderID);
           });
         
-        user.socket.on("answer", (answer) => {
-        console.log(answer)
-        connection.setRemoteDescription(answer);
+        user.socket.on("answer", (answer, senderID) => {
+            setAnswer(answer, senderID);
         });
 
-        user.socket.on("ice", (ice) => {
-            console.log(ice)
-            connection.addIceCandidate(ice);
+        user.socket.on("ice", (ice, senderID) => {
+            setIce(ice, senderID);
           });
 
-        connection.addEventListener("icecandidate", (data)=>{
-            console.log(data)
-            user.socket.emit("ice", data.candidate, user.roomInfo)
-        })
-        
-        connection.addEventListener("addstream", (data)=>{
-            video.current.srcObject = data.stream;
-            var gainlocalNode = audioCtx.createGain();
-            gainlocalNode.gain.value = 0.5;
-            audioCtx.createMediaStreamSource(data.stream);
-            gainlocalNode.connect(audioCtx.destination);
-            video.current.play();
-        })
 
         //Room event 등록
+        user.socket.emit('fetchMember', user.roomInfo)
+     
+        user.socket.on("showMemberList", (data, joined)=>{
+            if(data.length>members){
+                addAudioConnect(joined,data);
+            }
+            else{
+                audioDisConnect(joined,data);
+            }
+            let memberList = [];
+            for(const value of data){
+                memberList.push(value.nickname) 
+            }
+            console.log(memberList)
+            setMembers(memberList)
+        })
 
         user.socket.on("breakRoom",()=>{
             exitToLobby()
         })
+
         return ()=>{
             user.socket.removeAllListeners();
             connection.close();
             connection = null;
             audioCtx = null;
         }
-    },[])
+    }, [])
 
+    //Audio connection 함수
+    const setOffer = async (offer, senderID) => {
+        console.log(connections.find(data=> data.id == senderID), senderID)
+        let offerConn = connections.find(data=> data.id == senderID).connection
+        offerConn.setRemoteDescription(offer);
+        offerConn.createAnswer()
+        .then((result)=>{
+            console.log(result)
+            offerConn.setLocalDescription(result);
+            user.socket.emit("answer", result, senderID);
+        })
+    }
+
+    const setAnswer = (answer, senderID) => {
+        let answerConn = connections.find(data=> data.id == senderID).connection
+        answerConn.setRemoteDescription(answer);
+    }
+    
+    const setIce = (ice, senderID) =>{
+        let iceConn = connections.find(data=> data.id == senderID).connection
+        iceConn.addIceCandidate(ice);
+    }
+
+    const addAudioConnect=(join, data)=>{
+
+        console.log(members, data)
+
+        for(const value of data){
+            if(!members.includes(value.nickname)&&value.nickname!=user.nickname){
+                let connection = new RTCPeerConnection({
+                    iceServers: [
+                        {
+                            urls: [
+                                "stun:stun1.l.google.com:19302",
+                                "stun:stun2.l.google.com:19302",
+                                "stun:stun3.l.google.com:19302",
+                                "stun:stun4.l.google.com:19302",
+                            ]
+                        }
+                    ]
+            
+                })
+                connections.push({id:value.id, connection:connection})
+
+                user.mediaStream.getTracks().forEach(track =>{
+                    connection.addTrack(track, user.mediaStream)
+                })
+                if(join){
+                connection.createOffer()
+                .then((result)=>{
+                    console.log(result)
+                    connection.setLocalDescription(result)
+                    user.socket.emit("offer", result, value.id)
+                })
+            }
+                connection.addEventListener("icecandidate", (ice)=>{
+                    console.log(ice)
+                    user.socket.emit("ice", ice.candidate, value.id )
+                })
+                
+                connection.addEventListener("addstream", (data)=>{
+                    console.log("addStream");
+                    video.current.srcObject = data.stream;
+                    var gainlocalNode = audioCtx.createGain();
+                    gainlocalNode.gain.value = 0.5;
+                    audioCtx.createMediaStreamSource(data.stream);
+                    gainlocalNode.connect(audioCtx.destination);
+                    video.current.play();
+                })
+            }
+        }
+    }
+
+    const audioDisConnect=(data)=>{
+        console.log(members, data)
+    }
 
     const createReserv = (e) =>{
         e.preventDefault();
@@ -317,7 +371,7 @@ function Room() {
     }
 
     const exitToLobby = () =>{
-        user.socket.emit('leaveRoom', user.roomInfo, user.host);
+        user.socket.emit('leaveRoom', user.roomInfo, user.host)
         user.host=false;
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
@@ -342,11 +396,13 @@ function Room() {
             <List>
                 <div>
                 참가자<br></br><br></br>
-                <textarea cols="25" rows="15"
+                {members}
+                {/* <textarea cols="25" rows="15"
                         style={{backgroundColor: "rgba(255,255,255,0.5)", 
                         borderColor: "white",
                         resize: "none"}}>
-                    <input type='text'></input></textarea>
+                            {membersss}
+                    </textarea> */}
                 </div>   
             </List>
 

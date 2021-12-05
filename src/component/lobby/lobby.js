@@ -118,11 +118,8 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "https://bsingroom.loca.lt";
+const ENDPOINT = "https://bsingroom.loca.lt/";
 const socket = io.connect(ENDPOINT);
-socket.on("hello",()=>{
-    socket.emit("getNickname",history.state.usr.nickname )
-})
 
 //Lobby 컴포넌트 정의
 function Lobby() {
@@ -134,28 +131,32 @@ function Lobby() {
     //history객체를 통해 intro에서 submit된 값을 세팅한다.
     useEffect(() => {
 
-        
         socket.on('showRoomList', (rooms)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.
             let roomList = [];
             for(var i=0; i<rooms.length; ++i){
                 if (rooms[i])//if(rooms[i].slice(3)=="room")
                 roomList.push({roomname:rooms[i]}) 
             }
-            console.log('fetch')
             console.log(rooms.length)
             setRooms(roomList)
         })
+
 
         navigator.mediaDevices.getUserMedia({
             audio: { echoCancellation: false },
             video: false})
         .then(function(stream){
             setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream))
-            fetchRoom()
         })
-    return ()=>{
-        user.socket.removeAllListeners();
-    }
+
+        setTimeout(() => {
+            fetchRoom();
+        }, 500);
+        
+        return ()=>{
+            socket.removeAllListeners();
+        }
+
     },[]);
     
     console.log(user);
@@ -166,8 +167,9 @@ function Lobby() {
 
     const fetchRoom = () => {       //User객체 내부에 room정보를 업데이트한다.
         socket.emit("fetchRoom")
-        
+        console.log('fetch')
     };
+    
 
     const onEnter = (roomname) => {
         user.joinRoom(roomname);
