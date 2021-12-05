@@ -116,7 +116,7 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "https://bsingroom2.loca.lt/";
+const ENDPOINT = "https://bsingroom.loca.lt/";
 const socket = io.connect(ENDPOINT);
 
 //Lobby 컴포넌트 정의
@@ -135,7 +135,6 @@ function Lobby() {
                 if (rooms[i])//if(rooms[i].slice(3)=="room")
                 roomList.push({roomname:rooms[i]}) 
             }
-            console.log('fetch')
             console.log(rooms.length)
             setRooms(roomList)
         })
@@ -146,10 +145,12 @@ function Lobby() {
             video: false})
         .then(function(stream){
             setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream))
-            fetchRoom();
         })
 
-
+        setTimeout(() => {
+            fetchRoom();
+        }, 500);
+        
         return ()=>{
             socket.removeAllListeners();
         }
@@ -164,7 +165,7 @@ function Lobby() {
 
     const fetchRoom = () => {       //User객체 내부에 room정보를 업데이트한다.
         socket.emit("fetchRoom")
-        
+        console.log('fetch')
     };
     
 

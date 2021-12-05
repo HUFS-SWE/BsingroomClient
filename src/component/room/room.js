@@ -243,31 +243,16 @@ function Room() {
             setIce(ice, senderID);
           });
 
+
         //Room event 등록
-
         user.socket.emit('fetchMember', user.roomInfo)
-
-        user.socket.on("showMemberList", (data)=>{
+     
+        user.socket.on("showMemberList", (data, joined)=>{
             if(data.length>members){
-                addAudioConnect(false,data);
+                addAudioConnect(joined,data);
             }
             else{
-                audioDisConnect(false,data);
-            }
-            let memberList = [];
-            for(const value of data){
-                memberList.push(value.nickname) 
-            }
-            console.log(memberList)
-            setMembers(memberList)
-        })
-
-        user.socket.on("answerConnect",(data)=>{
-            if(data.length>members){
-                addAudioConnect(true,data);
-            }
-            else{
-                audioDisConnect(true,data);
+                audioDisConnect(joined,data);
             }
             let memberList = [];
             for(const value of data){
@@ -386,8 +371,8 @@ function Room() {
     }
 
     const exitToLobby = () =>{
+        user.socket.emit('leaveRoom', user.roomInfo, user.host)
         user.host=false;
-        user.socket.emit('leaveRoom', user.roomInfo)
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
 
