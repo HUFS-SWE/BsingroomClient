@@ -121,12 +121,23 @@ const ReserveSong = styled.div`
     background-color:rgba(255, 255, 255, 0.1);
 `
 
-const SongReserveButton = styled.div`
+const SongReserveButton = styled.button`
     /* 노래 예약 버튼 */ 
     position: relative;
     align-items: center;
-    top: 40px;
-    left: 190px;
+    width: 60px; 
+    height: 30px;
+    margin-top: 5%;
+    margin-left: 75%;
+    color: black;
+    background: #86E57F;
+    border: solid 1px #777777;
+    border-radius: 10px;
+    box-shadow: 2px 2px navy;
+    &:hover {
+        background: lightgreen;}
+    &:active {
+        background: #59DA50;}
 `
 
 const Sound = styled.div`
@@ -182,15 +193,26 @@ const ChatInput = styled.div`
     justify-content: center;
     width: auto;
     height: auto;
-    margin: 0.25em;
+    margin-bottom: 10px;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
     border-color: lightgray;
     border-radius: 10px;
-    background-color:rgba(255, 255, 255, 0.1);
+    background-color:transparent;
     word-break:break-all;
 `
-
+const Chatpush = styled.button`
+    /* 채팅전송버튼 */
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    height: 30px; 
+    width: 30px;
+    backgrond-color: transparent;
+    border: none;
+    &:hover {background: lightgray;}
+`
 
 const Exit = styled.div`
     /* 방 나가기 버튼 */
@@ -416,35 +438,28 @@ function Room() {
             
             <br></br><p>
                 (방제) <ViewTextarea></ViewTextarea>
-            </p><br></br>
+            </p><br></br><br></br>
 
-            <div width="100%" height="300px" id='player'>
+            <div width="100%" height="50%" id='player'>
                 <video ref={video}></video>
             </div>           
             
             <br></br><p>
                 현재곡: <ViewTextarea></ViewTextarea>
-            </p><br></br>
+            </p><br></br><br></br>
 
             <ReserveSong>
-                <center>
-                <form onSubmit={createReserv}>
+                
+                <form onSubmit={createReserv}><center>
                     <input type='url' placeholder='반주 URL' 
-                        style={{width: "90%", 
-                                height: "30px", 
-                                position: 'relative', 
-                                top:'20px'}}
+                        style={{position: 'relative', top:'20px', 
+                                width:"70%", height:"25px",
+                                border:"none", borderRadius:"5px"}}
                         name = "url">
-                    </input>
-                    <SongReserveButton>
-                        <button type='submit' 
-                                style={{width: "60px", height: "30px",
-                                backgroundColor: "#C3FF9E",
-                                border: "solid 1px",
-                                borderRadius: "10px"}}>
-                            예약</button></SongReserveButton>
+                    </input><br></br><br></br></center>
+                    <SongReserveButton type='submit'>예약</SongReserveButton>
                 </form>
-                </center>
+                
             </ReserveSong>
             
             <Sound>
@@ -457,51 +472,45 @@ function Room() {
         <Right>
             
             <NetworkStatus>
-                    (네트워크 신호)
-                </NetworkStatus>
+                (네트워크 신호)
+            </NetworkStatus>
 
-                <Chatting>
-                    <p>
-                        채팅<br></br><br></br>
-                        <textarea cols="25" rows="25"
-                            style={{
-                                backgroundColor: "rgb(255,255,255,0.5)",
-                                resize: "none"
-                            }}>
-                            <input type='text'></input>
-                        </textarea>
-                    </p>
-                </Chatting>
+            <Chatting>
+                <p>
+                    채팅<br></br><br></br>
+                    <textarea cols="25" rows="25"
+                        style={{
+                            backgroundColor: "rgb(255,255,255,0.5)",
+                            resize: "none"}}>
+                        <input type='text'></input>
+                    </textarea>
+                </p>
+            </Chatting>
 
-                <ChatInput>
+            <ChatInput>
                     <form>
                         <textarea type="input" text-overflow="clip"
-                            style={{
-                                width: "80%",
-                                height: "100%",
-                                resize: "none",
-                                border: "white"}}>        
-                    </textarea>
+                            style={{width: "80%",height: "100%",
+                                resize: "none", border: "white"}}>        
+                        </textarea>
 
-                    <button type="submit" 
-                        style={{height:"30px", width:"auto",
-                                backgroundColor: "#11ffee00"}} >
+                        <Chatpush type="submit"> 
                         <img src='../../img/채팅전송버튼.png' 
-                            height="15" width="15"></img>
-                    </button>
-                </form>
+                            style={{width:"15px",height:"15px"}}></img>
+                        </Chatpush>
+                    </form>
             </ChatInput>
+            
 
             <Exit>
-                    <ExitButton onClick={exitToLobby} style={{height:"30px", width:"100px",
-                                backgroundColor: "#8F2121",
-                                backgroundRadius: "10px",
-                                border: "solid 1px black",
-                                borderRadius: "10px",
-                                color: "#E88989"
-                                }} >
-                         방 나가기 
-                    </ExitButton>
+                <ExitButton onClick={exitToLobby} 
+                            style={{height:"30px", width:"100px",
+                            backgroundColor: "#8F2121",
+                            backgroundRadius: "10px",
+                            border: "solid 1px black",
+                            borderRadius: "10px",
+                            color: "#E88989"}} >
+                방 나가기 </ExitButton>
             </Exit>
 
         </Right>

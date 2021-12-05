@@ -4,8 +4,6 @@ import RoomList from './RoomList';
 import Room from './RoomList';
 import rooms from './lobby';
 
-// import rooms from './lobby';
-
 const SearchButton = styled.button`
     position: relative;
     cursor: pointer;

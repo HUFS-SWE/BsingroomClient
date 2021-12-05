@@ -75,6 +75,18 @@ const Room_search = styled.div`
     margin: 10px 10px;
     width: 100%;
 `
+const Refresh_button = styled.button`
+    width: 80px;
+    height: 28px;
+    border: solid gray 1px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 2px 2px navy;
+    &:hover {
+        background: #FFFFAB;}
+    &:active {
+        background: #FFECAB;}
+`
 const Room_create = styled.div`
     flex: 1;
     padding: 10px;
@@ -107,7 +119,7 @@ const Volume = styled.div`
     display: flex;
     position: absolute;
     width: 400px;
-    margin: 27px 220px;
+    margin: 27px 260px;
     padding: 15px 15px;
     justify-content: center;
     align-items: center;
@@ -235,9 +247,9 @@ function Lobby() {
                         <div style={{flex:2}}>
                         <SearchInput type='text' onClick={Search}/></div>
                         <div style={{flex:1}}>
-                            <button onClick={fetchRoom}
-                                style={{cursor:"pointer"}}
-                            >새로고침</button></div>
+                            <Refresh_button onClick={fetchRoom}
+                            >새로고침</Refresh_button>
+                        </div>
                     </div><br></br>
                     <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_list>
