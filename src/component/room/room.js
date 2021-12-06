@@ -227,17 +227,12 @@ function Room() {
 
     const video = useRef(null);
     let audioCtx = new AudioContext();
-    let localSource = audioCtx.createMediaStreamSource(user.mediaStream)
+    let localSource 
     let localgain = audioCtx.createGain();
     localgain.gain.value = 1;
-    let localDestination = audioCtx.createMediaStreamDestination();
-    localSource.connect(localgain);
-    localgain.connect(localDestination)
-    console.log(localSource, localDestination)
 
    
     useEffect(()=>{
-        video.current.srcObject = localDestination.stream;
 
         //Youtube API   
         var tag = document.createElement('script');
@@ -316,6 +311,12 @@ function Room() {
     const addAudioConnect=(join,data)=>{
         let memberIDList = []
         memberList.forEach(mb=>memberIDList.push(mb.id))
+        if(memberIDList.length==1){
+            document.getElementById(user.socket.id).srcObject = user.mediaStream;
+            localSource = audioCtx.createMediaStreamSource(document.getElementById(user.socket.id).srcObject)
+            localSource.connect(localgain);
+            localSource.connect(audioCtx.destination);
+        }
         for(const value of data){
             if(!memberIDList.includes(value.id)&&value.id!=user.socket.id){
                 let connection = new RTCPeerConnection({
@@ -334,8 +335,8 @@ function Room() {
                 connections.push({id:value.id, connection:connection})
                 console.log(connections)
 
-                localDestination.stream.getTracks().forEach(track =>{
-                    connection.addTrack(track, localDestination.stream)
+                user.mediaStream.getTracks().forEach(track =>{
+                    connection.addTrack(track, user.mediaStream)
                 })
 
                 if(join){
@@ -353,6 +354,10 @@ function Room() {
                 
                 connection.addEventListener("addstream", (data)=>{
                     document.getElementById(value.id).srcObject = data.stream
+                    var gainNode = audioCtx.createGain();
+                    var source = audioCtx.createMediaStreamSource(document.getElementById(value.id).srcObject)
+                    source.connect(gainNode);
+                    source.connect(audioCtx.destination);
                 })
             }
         }
