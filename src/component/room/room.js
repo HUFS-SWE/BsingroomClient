@@ -225,14 +225,20 @@ function Room() {
     let songList = [];
 
     const video = useRef(null);
-    
-    let audioCtx = new AudioContext();
+    let localAudioCtx = new AudioContext();
+    let localSource = localAudioCtx.createMediaStreamSource(user.mediaStream)
+    let localgain = localAudioCtx.createGain();
+    localgain.gain.value = 1;
+    let localDestination = localAudioCtx.createMediaStreamDestination();
+    localSource.connect(localgain);
+    localgain.connect(localDestination)
+    console.log(localSource, localDestination)
 
+   
     useEffect(()=>{
-
-        video.current.srcObject = user.mediaStream;
-
-        //Youtube API
+        video.current.srcObject = localDestination.stream;
+      
+        //Youtube API   
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
         var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -276,12 +282,9 @@ function Room() {
         user.socket.on("breakRoom",()=>{
             exitToLobby()
         })
-
+        
         return ()=>{
             user.socket.removeAllListeners();
-            connection.close();
-            connection = null;
-            audioCtx = null;
         }
     }, [])
 
@@ -327,11 +330,14 @@ function Room() {
                     ]
             
                 })
+                let audioCtx = new AudioContext();
                 connections.push({id:value.id, connection:connection})
                 console.log(connections)
+
                 user.mediaStream.getTracks().forEach(track =>{
                     connection.addTrack(track, user.mediaStream)
                 })
+
                 if(join){
                 connection.createOffer()
                 .then((result)=>{
@@ -346,9 +352,10 @@ function Room() {
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
-                    console.log(data.stream.getTracks()[0])
-                    user.mediaStream.addTrack(data.stream.getTracks()[0])
-                    console.log(user.mediaStream.getTracks())
+                    let gain = audioCtx.createGain();
+                    connections.find(data=> data.id == value.id).gainNode = gain;
+                    audioCtx.createMediaStreamSource(data.stream).connect(gain);
+                    gain.connect(localDestination);
                 })
             }
         }
