@@ -225,11 +225,11 @@ function Room() {
     let songList = [];
 
     const video = useRef(null);
-    let localAudioCtx = new AudioContext();
-    let localSource = localAudioCtx.createMediaStreamSource(user.mediaStream)
-    let localgain = localAudioCtx.createGain();
+    let audioCtx = new AudioContext();
+    let localSource = audioCtx.createMediaStreamSource(user.mediaStream)
+    let localgain = audioCtx.createGain();
     localgain.gain.value = 1;
-    let localDestination = localAudioCtx.createMediaStreamDestination();
+    let localDestination = audioCtx.createMediaStreamDestination();
     localSource.connect(localgain);
     localgain.connect(localDestination)
     console.log(localSource, localDestination)
@@ -330,7 +330,6 @@ function Room() {
                     ]
             
                 })
-                let audioCtx = new AudioContext();
                 connections.push({id:value.id, connection:connection})
                 console.log(connections)
 
@@ -352,10 +351,10 @@ function Room() {
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
-                    let gain = audioCtx.createGain();
-                    connections.find(data=> data.id == value.id).gainNode = gain;
-                    audioCtx.createMediaStreamSource(data.stream).connect(gain);
+                    let audioSource = audioCtx.createMediaStreamSource(data.stream)
+                    audioSource.connect(localgain)
                     gain.connect(localDestination);
+                    console.log(video.current.srcObject)
                 })
             }
         }
