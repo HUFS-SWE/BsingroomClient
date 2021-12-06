@@ -311,7 +311,7 @@ function Room() {
         let memberIDList = []
         memberList.forEach(mb=>memberIDList.push(mb.id))
         for(const value of data){
-            if(!memberIDList.includes(value.id)&&value.id!=user.id){
+            if(!memberIDList.includes(value.id)&&value.id!=user.socket.id){
                 let connection = new RTCPeerConnection({
                     iceServers: [
                         {
