@@ -104,6 +104,7 @@ const ViewTextarea = styled.input`
     font-size: 15px;
     color: white;
     background: transparent;
+    border: none;
     box-sizing: content-box;
 `
 
@@ -202,20 +203,25 @@ const ChatInput = styled.div`
     word-break:break-all;
 `
 const Chatpush = styled.button`
-    /* 채팅전송버튼 */
-    align-items: center;
-    justify-content: center;
+    /* 채팅 전송 버튼 */
     position: relative;
     cursor: pointer;
-    height: 30px; 
+    bottom: 7px;
+    left: 5px;
+    height: 25px; 
     width: 30px;
-    backgrond-color: transparent;
+    background-color: #EEEEEE;
     border: none;
-    &:hover {background: lightgray;}
+    border-radius: 2px;
+    box-shadow: 2px 2px navy;
+    &:hover {
+        background: white;}
+    &:active {
+        background: #59DA50;}
 `
 
 const Exit = styled.div`
-    /* 방 나가기 버튼 */
+    /* 방 나가기 구역 */
     display: flex;
     flex:3;
     align-items: center;
@@ -223,6 +229,7 @@ const Exit = styled.div`
 `
 
 const ExitButton = styled.button`
+    /* 방 나가기 버튼 */
     justify-content: center;
     position: relative;
     cursor: pointer;
@@ -438,15 +445,15 @@ function Room() {
             
             <br></br><p>
                 (방제) <ViewTextarea></ViewTextarea>
-            </p><br></br><br></br>
+            </p><br></br>
 
-            <div width="100%" height="50%" id='player'>
+            <div width="100%" height="100%" id='player'>
                 <video ref={video}></video>
             </div>           
             
             <br></br><p>
                 현재곡: <ViewTextarea></ViewTextarea>
-            </p><br></br><br></br>
+            </p><br></br>
 
             <ReserveSong>
                 
@@ -490,13 +497,13 @@ function Room() {
             <ChatInput>
                     <form>
                         <textarea type="input" text-overflow="clip"
-                            style={{width: "80%",height: "100%",
+                            style={{width: "80%", height: "100%",
                                 resize: "none", border: "white"}}>        
                         </textarea>
 
                         <Chatpush type="submit"> 
-                        <img src='../../img/채팅전송버튼.png' 
-                            style={{width:"15px",height:"15px"}}></img>
+                            <img src='../../img/채팅전송버튼.png' 
+                                style={{width:"15px",height:"15px"}}></img>
                         </Chatpush>
                     </form>
             </ChatInput>
