@@ -214,6 +214,7 @@ function Room() {
     const {user, setuser} = useContext(UserDispatch);
 
     const [members, setMembers] = useState([]);
+    let memberList = [];
     let connections = [];
     let songList = [];
 
@@ -248,18 +249,19 @@ function Room() {
         user.socket.emit('fetchMember', user.roomInfo)
      
         user.socket.on("showMemberList", (data, joined)=>{
+            let tempMemberList = [];
+            for(const value of data){
+                tempMemberList.push(value.nickname) 
+            }
+           
+            setMembers(tempMemberList)
+            memberList = tempMemberList;
             if(data.length>members){
                 addAudioConnect(joined,data);
             }
             else{
                 audioDisConnect(joined,data);
             }
-            let memberList = [];
-            for(const value of data){
-                memberList.push(value.nickname) 
-            }
-            console.log(memberList)
-            setMembers(memberList)
         })
 
         user.socket.on("breakRoom",()=>{
@@ -299,10 +301,10 @@ function Room() {
 
     const addAudioConnect=(join, data)=>{
 
-        console.log(members, data)
+        console.log(memberList, data)
 
         for(const value of data){
-            if(!members.includes(value.nickname)&&value.nickname!=user.nickname){
+            if(!memberList.includes(value.nickname)&&value.nickname!=user.nickname){
                 let connection = new RTCPeerConnection({
                     iceServers: [
                         {
@@ -317,7 +319,7 @@ function Room() {
             
                 })
                 connections.push({id:value.id, connection:connection})
-
+                console.log(connections)
                 user.mediaStream.getTracks().forEach(track =>{
                     connection.addTrack(track, user.mediaStream)
                 })
@@ -338,7 +340,7 @@ function Room() {
                     console.log("addStream");
                     video.current.srcObject = data.stream;
                     var gainlocalNode = audioCtx.createGain();
-                    gainlocalNode.gain.value = 0.5;
+                    gainlocalNode.gain.value = 0.1;
                     audioCtx.createMediaStreamSource(data.stream);
                     gainlocalNode.connect(audioCtx.destination);
                     video.current.play();
