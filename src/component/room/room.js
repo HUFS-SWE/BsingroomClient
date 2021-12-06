@@ -6,6 +6,7 @@ import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
 import { stepIconClasses } from '@mui/material';
+import { flexbox } from '@mui/system';
 
 const Background = styled.div`
     /* 배경 */
@@ -206,8 +207,13 @@ const ExitButton = styled.button`
     cursor: pointer;
     box-shadow: 3px 3px navy;
 `
-
-
+const Member =({member})=>{
+    return(
+        <div style={{display:'flex', height:"10%"}}>
+            <p>{member.nickname}</p>
+        </div>
+    );
+}
 function Room() {
     const navigate = useNavigate(); 
 
@@ -249,19 +255,20 @@ function Room() {
         user.socket.emit('fetchMember', user.roomInfo)
      
         user.socket.on("showMemberList", (data, joined)=>{
-            let tempMemberList = [];
-            for(const value of data){
-                tempMemberList.push(value.nickname) 
-            }
-           
-            setMembers(tempMemberList)
-            memberList = tempMemberList;
-            if(data.length>members){
+        
+            if(data.length>memberList){
                 addAudioConnect(joined,data);
             }
             else{
                 audioDisConnect(joined,data);
             }
+            let tempMemberList = [];
+            for(const value of data){
+                tempMemberList.push(value) 
+            }
+           
+            setMembers(tempMemberList)
+            memberList = tempMemberList.slice();
         })
 
         user.socket.on("breakRoom",()=>{
@@ -299,10 +306,8 @@ function Room() {
         iceConn.addIceCandidate(ice);
     }
 
-    const addAudioConnect=(join, data)=>{
-
+    const addAudioConnect=(join,data)=>{
         console.log(memberList, data)
-
         for(const value of data){
             if(!memberList.includes(value.nickname)&&value.nickname!=user.nickname){
                 let connection = new RTCPeerConnection({
@@ -349,7 +354,7 @@ function Room() {
         }
     }
 
-    const audioDisConnect=(data)=>{
+    const audioDisConnect=(joined, data)=>{
         console.log(members, data)
     }
 
@@ -398,13 +403,10 @@ function Room() {
             <List>
                 <div>
                 참가자<br></br><br></br>
-                {members}
-                {/* <textarea cols="25" rows="15"
-                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
-                        borderColor: "white",
-                        resize: "none"}}>
-                            {membersss}
-                    </textarea> */}
+                {members.map(member => (
+                    <Member member={member}/>
+                ))
+                }
                 </div>   
             </List>
 
