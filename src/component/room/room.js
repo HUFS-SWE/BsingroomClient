@@ -351,10 +351,9 @@ function Room() {
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
-                    let audioSource = audioCtx.createMediaStreamSource(data.stream)
-                    audioSource.connect(localgain)
-                    gain.connect(localDestination);
-                    console.log(video.current.srcObject)
+                    audioCtx.createMediaStreamSource(data.stream).connect(localDestination);
+                    video.current.srcObject = localDestination.stream
+                    console.log(data,localDestination.stream.getTracks(),video.current.srcObject.getTracks())
                 })
             }
         }
