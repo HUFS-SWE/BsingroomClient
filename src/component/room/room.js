@@ -255,8 +255,8 @@ function Room() {
         user.socket.emit('fetchMember', user.roomInfo)
      
         user.socket.on("showMemberList", (data, joined)=>{
-        
-            if(data.length>memberList){
+            console.log(memberList, data)
+            if(data.length>memberList.length){
                 addAudioConnect(joined,data);
             }
             else{
@@ -285,6 +285,7 @@ function Room() {
 
     //Audio connection 함수
     const setOffer = async (offer, senderID) => {
+        console.log(connections)
         console.log(connections.find(data=> data.id == senderID), senderID)
         let offerConn = connections.find(data=> data.id == senderID).connection
         offerConn.setRemoteDescription(offer);
