@@ -236,8 +236,7 @@ function Room() {
 
    
     useEffect(()=>{
-        video.current.srcObject = localDestination.stream;
-      
+
         //Youtube API   
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
@@ -351,9 +350,12 @@ function Room() {
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
-                    audioCtx.createMediaStreamSource(data.stream).connect(localDestination);
-                    video.current.srcObject = localDestination.stream
-                    console.log(data,localDestination.stream.getTracks(),video.current.srcObject.getTracks())
+                    var source = audioCtx.createMediaStreamSource(data.stream);
+                    var gainNode = audioCtx.createGain();
+                    gainNode.gain.value = .5; 
+                    source.connect(gainNode);
+                    source.connect(localDestination);
+                    video.current.srcObject = localDestination.stream;
                 })
             }
         }
