@@ -230,6 +230,8 @@ function Room() {
 
     useEffect(()=>{
 
+        video.current.srcObject = user.mediaStream;
+
         //Youtube API
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
@@ -344,13 +346,9 @@ function Room() {
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
-                    console.log("addStream");
-                    video.current.srcObject = data.stream;
-                    var gainlocalNode = audioCtx.createGain();
-                    gainlocalNode.gain.value = 0.1;
-                    audioCtx.createMediaStreamSource(data.stream);
-                    gainlocalNode.connect(audioCtx.destination);
-                    video.current.play();
+                    data.stream.getTracks(track=>{
+                        user.mediaStream.addTrack(track)
+                    })
                 })
             }
         }
@@ -425,7 +423,7 @@ function Room() {
             </p><br></br>
 
             <div width="100%" height="300px" id='player'>
-                <video ref={video}></video>
+                <video ref={video} autoPlay></video>
             </div>           
             
             <br></br><p>
