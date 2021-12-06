@@ -211,6 +211,7 @@ const Member =({member})=>{
     return(
         <div style={{display:'flex', height:"10%"}}>
             <p>{member.nickname}</p>
+            <audio id={member.id}></audio>
         </div>
     );
 }
@@ -236,6 +237,7 @@ function Room() {
 
    
     useEffect(()=>{
+        video.current.srcObject = localDestination.stream;
 
         //Youtube API   
         var tag = document.createElement('script');
@@ -350,12 +352,7 @@ function Room() {
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
-                    var source = audioCtx.createMediaStreamSource(data.stream);
-                    var gainNode = audioCtx.createGain();
-                    gainNode.gain.value = .5; 
-                    source.connect(gainNode);
-                    source.connect(localDestination);
-                    video.current.srcObject = localDestination.stream;
+                    document.getElementById(value.id).srcObject = data.stream
                 })
             }
         }
