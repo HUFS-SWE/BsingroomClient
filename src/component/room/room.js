@@ -334,8 +334,8 @@ function Room() {
                 connections.push({id:value.id, connection:connection})
                 console.log(connections)
 
-                user.mediaStream.getTracks().forEach(track =>{
-                    connection.addTrack(track, user.mediaStream)
+                localDestination.stream.getTracks().forEach(track =>{
+                    connection.addTrack(track, localDestination.stream)
                 })
 
                 if(join){
