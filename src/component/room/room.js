@@ -346,10 +346,9 @@ function Room() {
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
-                    data.stream.getTracks.forEach(track=>{
-                        user.mediaStream.addTrack(track)
-                    })
-                    console.log(user.mediaStream)
+                    console.log(data.stream.getTracks()[0])
+                    user.mediaStream.addTrack(data.stream.getTracks()[0])
+                    console.log(user.mediaStream.getTracks())
                 })
             }
         }
