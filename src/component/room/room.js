@@ -308,9 +308,10 @@ function Room() {
     }
 
     const addAudioConnect=(join,data)=>{
-        console.log(memberList, data)
+        let memberIDList = []
+        memberList.forEach(mb=>memberIDList.push(mb.id))
         for(const value of data){
-            if(!memberList.includes(value.nickname)&&value.nickname!=user.nickname){
+            if(!memberIDList.includes(value.id)&&value.id!=user.id){
                 let connection = new RTCPeerConnection({
                     iceServers: [
                         {
