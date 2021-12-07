@@ -2,9 +2,9 @@ import React from 'react';
 
 function Room({ room, onEnter }) {
   return (
-    <div>
+    <div style={{marginTop:"6px"}}>
       
-        {room.roomname}
+        {room.roomname.slice(5)}
       
       &nbsp;
       
