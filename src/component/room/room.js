@@ -370,12 +370,15 @@ function Room() {
 
     const audioDisConnect=(joined, data)=>{
         let memberIDList = []
+        console.log(connections)
         data.forEach(mb=>memberIDList.push(mb.id))
         for(const value of memberList.filter(x => !memberIDList.includes(x.id))){
-            let leavedConn = connections.find(data=> data.id == value.id).connection
+            let leavedConn = connections.find(data=> data.id == value.id)
             leavedConn.connection.close();
             const index = connections.indexOf(leavedConn);
-            connections = connections.slice(index);
+            console.log(index)
+            connections.splice(index,1);
+            console.log(connections)
         }
     }
 
