@@ -5,6 +5,8 @@ import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
+import SendChat from './sendChat'
+
 
 const Background = styled.div`
     /* 배경 */
@@ -160,6 +162,7 @@ const NetworkStatus = styled.div`
 const Chatting = styled.div`
     /* 채팅 박스 */
     display: flex;
+    flex-direction: column;
     flex: 8;
     position: relative;
     width: auto;
@@ -210,11 +213,16 @@ function createReserv(e){
     e.preventDefault();
 
 }
+
+const store = []
+
 function Room() {
     const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
     const audio = useRef();
     let memberList = [];
+    const [chats, setChats] = useState([
+    ])
     useEffect(()=>{
         
         let audioCtx = new AudioContext();
@@ -232,15 +240,25 @@ function Room() {
             ]
     
         });
-
+        // 참가자 목록 띄우기
         user.socket.emit('fetchMember', user.roomInfo)
         user.socket.on('showMemberList', (arr)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
             for(const value of arr){
                 if (value)
-                memberList.push(value) 
+                memberList.push(value)
             }
+            setMembers(memberList) 
+
         })
-    
+        
+        //채팅 서버에서 이벤트 받기
+
+        user.socket.on('showChat', (content) => {        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
+            store.push(content)
+            setChats([...chats, ...store])
+        })
+
+        //
 
         user.mediaStream.getTracks().forEach(track =>{
             connection.addTrack(track, user.mediaStream)
@@ -286,15 +304,15 @@ function Room() {
             audioCR.play();
         })
         
+        return () => {
+            user.socket.removeAllListeners();
+        }
     }, [])
-
-    useEffect(()=>{
-        setMembers(memberList)
-    }, [memberList]);
-    
    
-    const [membersss, setMembers] = useState([]);
-
+    
+    
+    
+    
     const audioConnect = () =>{
         user.mediaStream.getTracks().forEach(track =>{
             connection.addTrack(track, user.mediaStream)
@@ -306,11 +324,50 @@ function Room() {
         })
     }
 
+    const [membersss, setMembers] = useState([]);
+
+    //채팅 입력해서 서버로 보내기
+    const [inputs, setInputs] = useState({
+        chat: '',
+    })
+
+    const { chat } = inputs;
+
+    const onChange = (e) => {
+        const { name, value } = e.target; // 우선 e.target 에서 name 과 value 를 추출
+        setInputs({
+          ...inputs,                      // 기존의 input 객체를 복사한 뒤
+          [name]: value                   // name 키를 가진 값을 value 로 설정
+        });
+      };
+    
+
+    const onSubmit = (e) => {   
+        e.preventDefault();
+        setInputs({chat:''})
+        user.socket.emit('sendChat', user.roomInfo, chat)
+    };
+
+    // 채팅 받아서 띄우기
+    
+    
+    const chatList = () => {
+        return chats.map((data, index) => (
+			<p key={index}>
+					{data}
+			</p>
+		)) 
+    };
+
+    // 방 나가기
     const exitToLobby = () =>{
+        store.splice(0)
+        console.log(store)
         user.socket.emit('leaveRoom', user.roomInfo)
-        user.socket.emit('fetchMember', user.roomInfo)
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
+
+
     return (
 
         <Background>
@@ -332,12 +389,6 @@ function Room() {
                 <div>
                 참가자<br></br><br></br>
                 {membersss}
-                {/* <textarea cols="25" rows="15"
-                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
-                        borderColor: "white",
-                        resize: "none"}}>
-                            {membersss}
-                    </textarea> */}
                 </div>   
             </List>
 
@@ -396,40 +447,27 @@ function Room() {
 
         <Right>
             
-            <NetworkStatus>
+                <NetworkStatus>
                     (네트워크 신호)
                 </NetworkStatus>
 
                 <Chatting>
-                    <p>
-                        채팅<br></br><br></br>
-                        <textarea cols="25" rows="25"
-                            style={{
-                                backgroundColor: "rgb(255,255,255,0.5)",
-                                resize: "none"
-                            }}>
-                            <input type='text'></input>
-                        </textarea>
-                    </p>
+                
+                        <div style={{width:'100%', flex:'1'}}>채팅</div>
+                        <div style={{overflow:'scroll', width:'100%',flex:'9'}}>
+                        {chatList()}
+                        </div>
+                    
                 </Chatting>
 
                 <ChatInput>
-                    <form>
-                        <textarea type="input" text-overflow="clip"
-                            style={{
-                                width: "80%",
-                                height: "100%",
-                                resize: "none",
-                                border: "white"}}>        
-                    </textarea>
-
-                    <button type="submit" 
-                        style={{height:"30px", width:"auto",
-                                backgroundColor: "#11ffee00"}} >
-                        <img src='../../img/채팅전송버튼.png' 
-                            height="15" width="15"></img>
-                    </button>
-                </form>
+                    
+                    <SendChat style={{whitespace: "pre-line"}}
+                            chat={chat} 
+                            onChange={onChange}
+                            onSubmit={onSubmit}
+                    />
+                    
             </ChatInput>
 
             <Exit>
