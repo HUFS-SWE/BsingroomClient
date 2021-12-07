@@ -251,8 +251,11 @@ function Room() {
 
     const [members, setMembers] = useState([]);
     let memberList = [];
-    let connections = [];
+
+    const [songs, setSongs] = useState([]);
     let songList = [];
+
+    let connections = [];
 
     const video = useRef(null);
     let audioCtx = new AudioContext();
@@ -287,19 +290,22 @@ function Room() {
         user.socket.emit('fetchMember', user.roomInfo)
      
         user.socket.on("showMemberList", (data, joined)=>{
-            console.log(memberList, data)
-            if(data.length>memberList.length){
-                addAudioConnect(joined,data);
-            }
-            else{
-                audioDisConnect(joined,data);
-            }
             let tempMemberList = [];
             for(const value of data){
                 tempMemberList.push(value) 
             }
            
             setMembers(tempMemberList)
+
+            console.log(memberList, data)
+            
+            if(data.length>memberList.length){
+                addAudioConnect(joined,data);
+            }
+            else{
+                audioDisConnect(joined,data);
+            }
+
             memberList = tempMemberList.slice();
 
             if(memberList.length==1){
@@ -326,7 +332,6 @@ function Room() {
 
     //Audio connection 함수
     const setOffer = async (offer, senderID) => {
-        console.log(connections)
         console.log(connections.find(data=> data.id == senderID), senderID)
         let offerConn = connections.find(data=> data.id == senderID).connection
         offerConn.setRemoteDescription(offer);
@@ -367,7 +372,6 @@ function Room() {
             
                 })
                 connections.push({id:value.id, connection:connection})
-                console.log(connections)
 
                 user.mediaStream.getTracks().forEach(track =>{
                     connection.addTrack(track, user.mediaStream)
@@ -393,33 +397,33 @@ function Room() {
                     source.connect(gainNode);
                     source.connect(audioCtx.destination);
                 })
+                console.log("audioConnected", connections, document.getElementById(value.id).src)
             }
         }
+        
     }
 
     const audioDisConnect=(joined, data)=>{
         let memberIDList = []
-        console.log(connections)
         data.forEach(mb=>memberIDList.push(mb.id))
         for(const value of memberList.filter(x => !memberIDList.includes(x.id))){
             let leavedConn = connections.find(data=> data.id == value.id)
             leavedConn.connection.close();
             const index = connections.indexOf(leavedConn);
-            console.log(index)
             connections.splice(index,1);
-            console.log(connections)
         }
+        console.log("audioDisConnected", connections, document.getElementById(value.id).srcObject)
     }
 
     const createReserv = (e) =>{
         e.preventDefault();
         //https://www.youtube.com/watch?v=3duS7p-H6KQ
         // https://www.youtube.com/watch?v=gX0rdGE8tW8
-        const url = e.target.url;
+        const ytbID = youtubeParser(e.target.url);
         const song = new YT.Player('player', {
-            height: '300px',
+            height: '100%',
             width: '100%',
-            videoId: 'gX0rdGE8tW8',
+            videoId: ytbID,
             events: {
                 'onReady': (event)=>{
                     event.target.playVideo();
@@ -429,6 +433,12 @@ function Room() {
         console.log(song)
         //user.socket.emit('createReserv', url);
     }
+    const youtubeParser = (url) =>{
+        var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+        var match = url.match(regExp);
+        return (match&&match[7].length==11)? match[7] : false;
+    }
+
 
     const exitToLobby = () =>{
         user.socket.emit('leaveRoom', user.roomInfo, user.host)
