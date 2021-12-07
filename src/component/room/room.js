@@ -292,9 +292,9 @@ function Room() {
             console.log(songList)
         })
 
-        user.socket.on("playReservedSong", (url)=>{
+        user.socket.on("playReservedSong", (play)=>{
             setPlaying(true)
-            setVideo(songs.find(song=>song.url==url));
+            setVideo(songs.find(song=>song.url==play).url);
             songList.shift()
             setSongs([...songList])
             console.log(songList)
