@@ -287,6 +287,11 @@ function Room() {
         
         return ()=>{
             user.socket.removeAllListeners();
+            for(const connection of connections){
+                connection.connection.close();
+            }
+            connections = null;
+            audioCtx.close();
         }
     }, [])
 
@@ -364,7 +369,14 @@ function Room() {
     }
 
     const audioDisConnect=(joined, data)=>{
-        console.log(members, data)
+        let memberIDList = []
+        data.forEach(mb=>memberIDList.push(mb.id))
+        for(const value of memberList.filter(x => !memberIDList.includes(x.id))){
+            let leavedConn = connections.find(data=> data.id == value.id).connection
+            leavedConn.connection.close();
+            const index = connections.indexOf(leavedConn);
+            connections = connections.slice(index);
+        }
     }
 
     const createReserv = (e) =>{
