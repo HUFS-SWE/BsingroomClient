@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../BsingroomServer"
+		},
+		{
+			"path": "../../../../BsingroomClMaster/BsingroomMaster"
+		},
+		{
+			"path": "../../../../../DB-malamalabeam"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "test",
+		"files.autoSave": "afterDelay"
+	}
+}

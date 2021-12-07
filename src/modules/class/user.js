@@ -7,6 +7,8 @@ export default class User{
         this.userIcon = userIcon;
         this.nickname = nickname;
         this.mediaStream = mediaStream;
+        this.socket.emit("getNickname", this.nickname)
+    
     }
     //guest (host==false)
     joinRoom(roomname){

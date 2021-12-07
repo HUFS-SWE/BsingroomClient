@@ -125,13 +125,6 @@ function Intro() {
         }
     }
 
-
-    const onKeyPress = (e) => {
-        if(e.key === 'Enter') {
-            onclick()
-        }   
-    }
-
     return (
 
         <Background>

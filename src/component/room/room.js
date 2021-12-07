@@ -7,6 +7,7 @@ import { UserDispatch } from '../../app.js'
 import Leave from './leave';
 import SendChat from './sendChat'
 
+import { stepIconClasses } from '@mui/material';
 
 const Background = styled.div`
     /* 배경 */
@@ -105,6 +106,7 @@ const ViewTextarea = styled.input`
     font-size: 15px;
     color: white;
     background: transparent;
+    border: none;
     box-sizing: content-box;
 `
 
@@ -122,12 +124,23 @@ const ReserveSong = styled.div`
     background-color:rgba(255, 255, 255, 0.1);
 `
 
-const SongReserveButton = styled.div`
+const SongReserveButton = styled.button`
     /* 노래 예약 버튼 */ 
     position: relative;
     align-items: center;
-    top: 40px;
-    left: 190px;
+    width: 60px; 
+    height: 30px;
+    margin-top: 5%;
+    margin-left: 75%;
+    color: black;
+    background: #86E57F;
+    border: solid 1px #777777;
+    border-radius: 10px;
+    box-shadow: 2px 2px navy;
+    &:hover {
+        background: lightgreen;}
+    &:active {
+        background: #59DA50;}
 `
 
 const Sound = styled.div`
@@ -184,18 +197,34 @@ const ChatInput = styled.div`
     justify-content: center;
     width: auto;
     height: auto;
-    margin: 0.25em;
+    margin-bottom: 10px;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
     border-color: lightgray;
     border-radius: 10px;
-    background-color:rgba(255, 255, 255, 0.1);
+    background-color:transparent;
     word-break:break-all;
 `
-
+const Chatpush = styled.button`
+    /* 채팅 전송 버튼 */
+    position: relative;
+    cursor: pointer;
+    bottom: 7px;
+    left: 5px;
+    height: 25px; 
+    width: 30px;
+    background-color: #EEEEEE;
+    border: none;
+    border-radius: 2px;
+    box-shadow: 2px 2px navy;
+    &:hover {
+        background: white;}
+    &:active {
+        background: #59DA50;}
+`
 
 const Exit = styled.div`
-    /* 방 나가기 버튼 */
+    /* 방 나가기 구역 */
     display: flex;
     flex:3;
     align-items: center;
@@ -203,54 +232,76 @@ const Exit = styled.div`
 `
 
 const ExitButton = styled.button`
+    /* 방 나가기 버튼 */
     justify-content: center;
     position: relative;
     cursor: pointer;
     box-shadow: 3px 3px navy;
 `
 
-function createReserv(e){
-    e.preventDefault();
 
-}
+
 
 const store = []
 
 function Room() {
-    const {user, setuser} = useContext(UserDispatch);
     const navigate = useNavigate(); 
-    const audio = useRef();
-    let memberList = [];
+
+    const {user, setuser} = useContext(UserDispatch);
+
+    const [members, setMembers] = useState([]);
+    let connections = [];
+    let songList = [];
+
     const [chats, setChats] = useState([
     ])
-    useEffect(()=>{
-        
-        let audioCtx = new AudioContext();
-        let connection = new RTCPeerConnection({
-            iceServers: [
-                {
-                    urls: [
-                        "stun:stun.l.google.com:19302",
-                        "stun:stun1.l.google.com:19302",
-                        "stun:stun2.l.google.com:19302",
-                        "stun:stun3.l.google.com:19302",
-                        "stun:stun4.l.google.com:19302",
-                    ]
-                }
-            ]
-    
-        });
-        // 참가자 목록 띄우기
-        user.socket.emit('fetchMember', user.roomInfo)
-        user.socket.on('showMemberList', (arr)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
-            for(const value of arr){
-                if (value)
-                memberList.push(value)
-            }
-            setMembers(memberList) 
 
-        })
+
+    const video = useRef(null);
+    
+    let audioCtx = new AudioContext();
+
+    useEffect(()=>{
+
+        //Youtube API
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         
+        //audio event 등록
+        
+        user.socket.on("offer", (offer, senderID) => {
+            setOffer(offer, senderID);
+          });
+        
+        user.socket.on("answer", (answer, senderID) => {
+            setAnswer(answer, senderID);
+        });
+
+        user.socket.on("ice", (ice, senderID) => {
+            setIce(ice, senderID);
+          });
+
+
+        //Room event 등록
+        user.socket.emit('fetchMember', user.roomInfo)
+     
+        user.socket.on("showMemberList", (data, joined)=>{
+            if(data.length>members){
+                addAudioConnect(joined,data);
+            }
+            else{
+                audioDisConnect(joined,data);
+            }
+            let memberList = [];
+            for(const value of data){
+                memberList.push(value.nickname) 
+            }
+            console.log(memberList)
+            setMembers(memberList)
+        })
+
         //채팅 서버에서 이벤트 받기
 
         user.socket.on('showChat', (content) => {        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
@@ -260,73 +311,115 @@ function Room() {
 
         //
 
-        user.mediaStream.getTracks().forEach(track =>{
-            connection.addTrack(track, user.mediaStream)
-        })
-        
-        connection.createOffer()
-        .then((result)=>{
-            console.log(result)
-            connection.setLocalDescription(result)
-            user.socket.emit("offer", result, user.roomInfo)
+        user.socket.on("breakRoom",()=>{
+            exitToLobby()
         })
 
-        user.socket.on("offer", async(offer) => {
-            connection.setRemoteDescription(offer);
-            connection.createAnswer()
-            .then((result)=>{
-                console.log(result)
-                connection.setLocalDescription(result);
-                user.socket.emit("answer", result, user.roomInfo);
-            })
-          });
-        
-        user.socket.on("answer", (answer) => {
-        console.log(answer)
-        connection.setRemoteDescription(answer);
-        });
-
-        user.socket.on("ice", (ice) => {
-            console.log(ice)
-            connection.addIceCandidate(ice);
-          });
-
-        connection.addEventListener("icecandidate", (data)=>{
-            console.log(data)
-            user.socket.emit("ice", data.candidate, user.roomInfo)
-        })
-        
-        connection.addEventListener("addstream", (data)=>{
-            console.log(data)
-            let audioCR = audio.current
-            audioCR.srcObject = data.stream;
-            audioCtx.createMediaElementSource(audioCR);
-            audioCR.play();
-        })
-        
-        return () => {
+        return ()=>{
             user.socket.removeAllListeners();
+            connection.close();
+            connection = null;
+            audioCtx = null;
         }
     }, [])
-   
-    
-    
-    
-    
-    const audioConnect = () =>{
-        user.mediaStream.getTracks().forEach(track =>{
-            connection.addTrack(track, user.mediaStream)
-        })
-        connection.createOffer()
+
+    //Audio connection 함수
+    const setOffer = async (offer, senderID) => {
+        console.log(connections.find(data=> data.id == senderID), senderID)
+        let offerConn = connections.find(data=> data.id == senderID).connection
+        offerConn.setRemoteDescription(offer);
+        offerConn.createAnswer()
         .then((result)=>{
-            connection.setLocalDescription(result)
-            socket.emit("offer", result, user.roomInfo)
+            console.log(result)
+            offerConn.setLocalDescription(result);
+            user.socket.emit("answer", result, senderID);
         })
     }
 
-    const [membersss, setMembers] = useState([]);
+    const setAnswer = (answer, senderID) => {
+        let answerConn = connections.find(data=> data.id == senderID).connection
+        answerConn.setRemoteDescription(answer);
+    }
+    
+    const setIce = (ice, senderID) =>{
+        let iceConn = connections.find(data=> data.id == senderID).connection
+        iceConn.addIceCandidate(ice);
+    }
 
-    //채팅 입력해서 서버로 보내기
+    const addAudioConnect=(join, data)=>{
+
+        console.log(members, data)
+
+        for(const value of data){
+            if(!members.includes(value.nickname)&&value.nickname!=user.nickname){
+                let connection = new RTCPeerConnection({
+                    iceServers: [
+                        {
+                            urls: [
+                                "stun:stun1.l.google.com:19302",
+                                "stun:stun2.l.google.com:19302",
+                                "stun:stun3.l.google.com:19302",
+                                "stun:stun4.l.google.com:19302",
+                            ]
+                        }
+                    ]
+            
+                })
+                connections.push({id:value.id, connection:connection})
+
+                user.mediaStream.getTracks().forEach(track =>{
+                    connection.addTrack(track, user.mediaStream)
+                })
+                if(join){
+                connection.createOffer()
+                .then((result)=>{
+                    console.log(result)
+                    connection.setLocalDescription(result)
+                    user.socket.emit("offer", result, value.id)
+                })
+            }
+                connection.addEventListener("icecandidate", (ice)=>{
+                    console.log(ice)
+                    user.socket.emit("ice", ice.candidate, value.id )
+                })
+                
+                connection.addEventListener("addstream", (data)=>{
+                    console.log("addStream");
+                    video.current.srcObject = data.stream;
+                    var gainlocalNode = audioCtx.createGain();
+                    gainlocalNode.gain.value = 0.5;
+                    audioCtx.createMediaStreamSource(data.stream);
+                    gainlocalNode.connect(audioCtx.destination);
+                    video.current.play();
+                })
+            }
+        }
+    }
+
+    const audioDisConnect=(data)=>{
+        console.log(members, data)
+    }
+
+    const createReserv = (e) =>{
+        e.preventDefault();
+        //https://www.youtube.com/watch?v=3duS7p-H6KQ
+        // https://www.youtube.com/watch?v=gX0rdGE8tW8
+        const url = e.target.url;
+        const song = new YT.Player('player', {
+            height: '300px',
+            width: '100%',
+            videoId: 'gX0rdGE8tW8',
+            events: {
+                'onReady': (event)=>{
+                    event.target.playVideo();
+                }
+            }
+          });
+        console.log(song)
+        //user.socket.emit('createReserv', url);
+    }
+
+
     const [inputs, setInputs] = useState({
         chat: '',
     })
@@ -359,14 +452,12 @@ function Room() {
 		)) 
     };
 
-    // 방 나가기
     const exitToLobby = () =>{
         store.splice(0)
-        console.log(store)
-        user.socket.emit('leaveRoom', user.roomInfo)
+        user.socket.emit('leaveRoom', user.roomInfo, user.host)
+        user.host=false;
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
-
 
     return (
 
@@ -388,7 +479,13 @@ function Room() {
             <List>
                 <div>
                 참가자<br></br><br></br>
-                {membersss}
+                {members}
+                {/* <textarea cols="25" rows="15"
+                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
+                        borderColor: "white",
+                        resize: "none"}}>
+                            {membersss}
+                    </textarea> */}
                 </div>   
             </List>
 
@@ -404,38 +501,26 @@ function Room() {
                 (방제) <ViewTextarea></ViewTextarea>
             </p><br></br>
 
-            <iframe width="100%" height="300px" 
-                    frameborder='1' border-width='1px' 
-                    border-color='white' border-style='solid' 
-                    src="https://www.youtube.com/embed/oyVf7rgBguE" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-            </iframe>           
+            <div width="100%" height="100%" id='player'>
+                <video ref={video}></video>
+            </div>           
             
             <br></br><p>
                 현재곡: <ViewTextarea></ViewTextarea>
             </p><br></br>
 
             <ReserveSong>
-                <center>
-                <form onSubmit={createReserv}>
+                
+                <form onSubmit={createReserv}><center>
                     <input type='url' placeholder='반주 URL' 
-                        style={{width: "90%", 
-                                height: "30px", 
-                                position: 'relative', 
-                                top:'20px'}}>
-                    </input>
-                    <SongReserveButton>
-                        <button type='submit' 
-                                style={{width: "60px", height: "30px",
-                                backgroundColor: "#C3FF9E",
-                                border: "solid 1px",
-                                borderRadius: "10px"}}>
-                            예약</button></SongReserveButton>
+                        style={{position: 'relative', top:'20px', 
+                                width:"70%", height:"25px",
+                                border:"none", borderRadius:"5px"}}
+                        name = "url">
+                    </input><br></br><br></br></center>
+                    <SongReserveButton type='submit'>예약</SongReserveButton>
                 </form>
-                <audio ref={audio} />
-                </center>
+                
             </ReserveSong>
             
             <Sound>
@@ -447,39 +532,35 @@ function Room() {
 
         <Right>
             
-                <NetworkStatus>
-                    (네트워크 신호)
-                </NetworkStatus>
+            <NetworkStatus>
+                (네트워크 신호)
+            </NetworkStatus>
 
-                <Chatting>
-                
-                        <div style={{width:'100%', flex:'1'}}>채팅</div>
-                        <div style={{overflow:'scroll', width:'100%',flex:'9'}}>
+            <Chatting>
+                    <div style={{ width: '100%', flex: '1' }}>채팅</div>
+                    <div style={{ overflow: 'scroll', width: '100%', flex: '9' }}>
                         {chatList()}
-                        </div>
-                    
-                </Chatting>
+                    </div>
+            </Chatting>
 
-                <ChatInput>
-                    
-                    <SendChat style={{whitespace: "pre-line"}}
-                            chat={chat} 
-                            onChange={onChange}
-                            onSubmit={onSubmit}
+            <ChatInput>
+                    <SendChat style={{ whitespace: "pre-line" }}
+                        chat={chat}
+                        onChange={onChange}
+                        onSubmit={onSubmit}
                     />
-                    
             </ChatInput>
+            
 
             <Exit>
-                    <ExitButton onClick={exitToLobby} style={{height:"30px", width:"100px",
-                                backgroundColor: "#8F2121",
-                                backgroundRadius: "10px",
-                                border: "solid 1px black",
-                                borderRadius: "10px",
-                                color: "#E88989"
-                                }} >
-                         방 나가기 
-                    </ExitButton>
+                <ExitButton onClick={exitToLobby} 
+                            style={{height:"30px", width:"100px",
+                            backgroundColor: "#8F2121",
+                            backgroundRadius: "10px",
+                            border: "solid 1px black",
+                            borderRadius: "10px",
+                            color: "#E88989"}} >
+                방 나가기 </ExitButton>
             </Exit>
 
         </Right>

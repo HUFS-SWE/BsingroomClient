@@ -7,6 +7,8 @@ import RoomList from './RoomList';
 import CreateRoom from './CreateRoom';
 import {io} from 'socket.io-client'
 import {UserDispatch} from '../../app.js'
+import SearchInput from './searchInput';
+import Search from './searchInput';
 
 //style 정의
 const Background = styled.div`
@@ -73,6 +75,18 @@ const Room_search = styled.div`
     margin: 10px 10px;
     width: 100%;
 `
+const Refresh_button = styled.button`
+    width: 80px;
+    height: 28px;
+    border: solid gray 1px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 2px 2px navy;
+    &:hover {
+        background: #FFFFAB;}
+    &:active {
+        background: #FFECAB;}
+`
 const Room_create = styled.div`
     flex: 1;
     padding: 10px;
@@ -105,7 +119,7 @@ const Volume = styled.div`
     display: flex;
     position: absolute;
     width: 400px;
-    margin: 27px 220px;
+    margin: 27px 260px;
     padding: 15px 15px;
     justify-content: center;
     align-items: center;
@@ -116,11 +130,8 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "https://dull-catfish-64.loca.lt/";
+const ENDPOINT = "https://bsingroom.loca.lt/";
 const socket = io.connect(ENDPOINT);
-socket.on("hello",()=>{
-    socket.emit("getNickname",history.state.usr.nickname )
-})
 
 //Lobby 컴포넌트 정의
 function Lobby() {
@@ -132,26 +143,32 @@ function Lobby() {
     //history객체를 통해 intro에서 submit된 값을 세팅한다.
     useEffect(() => {
 
-        
         socket.on('showRoomList', (rooms)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.
             let roomList = [];
             for(var i=0; i<rooms.length; ++i){
                 if (rooms[i])//if(rooms[i].slice(3)=="room")
                 roomList.push({roomname:rooms[i]}) 
             }
-            console.log('fetch')
             console.log(rooms.length)
             setRooms(roomList)
         })
+
 
         navigator.mediaDevices.getUserMedia({
             audio: { echoCancellation: false },
             video: false})
         .then(function(stream){
             setUser(new User(socket, history.state.usr.icon, history.state.usr.nickname, stream))
-            fetchRoom()
         })
-            
+
+        setTimeout(() => {
+            fetchRoom();
+        }, 500);
+        
+        return ()=>{
+            socket.removeAllListeners();
+        }
+
     },[]);
     
     console.log(user);
@@ -162,8 +179,9 @@ function Lobby() {
 
     const fetchRoom = () => {       //User객체 내부에 room정보를 업데이트한다.
         socket.emit("fetchRoom")
-        
+        console.log('fetch')
     };
+    
 
     const onEnter = (roomname) => {
         user.joinRoom(roomname);
@@ -185,6 +203,7 @@ function Lobby() {
     };
 
     const onCreate = () => {        //'방만들기' 클릭 시 실행
+        user.host = true;
         user.joinRoom("room_"+roomname)
         navigate('/room',{replace:true})
     };
@@ -200,6 +219,16 @@ function Lobby() {
     //       )
     //     );
     //   };
+
+
+    //search컴포넌트 관련 상태 정리
+    // const {searchinput} = searchinput; 
+
+    // const onclick = (searchinput) => {        //'검색' 클릭 시 실행
+    //     Search(searchinput)
+    // };
+
+
     return (
         <Background>
             <Header>
@@ -213,15 +242,15 @@ function Lobby() {
             
             <Room_list_create>
                 <Room_list>
-                    <h2>ROOM LIST</h2>
+                    <h2 style={{fontSize:"20px"}}>ROOM LIST</h2><br></br>
                     <div style={{display:'flex'}}>
-                    <div style={{flex:2}}><input type='text'></input><button style={{width:"50px", height:"30px",
-                                                                            backgroundColor:"lightgreen",
-                                                                             border:"solid 1px #333333",
-                                                                            borderRadius:"5px"}}
-                                                                        active={{backgroundColor:"#66CC33"}}>검색</button></div>
-                    <div style={{flex:1}}><button onClick={fetchRoom}>새로고침</button></div>
-                    </div>
+                        <div style={{flex:2}}>
+                        <SearchInput type='text' onClick={Search}/></div>
+                        <div style={{flex:1}}>
+                            <Refresh_button onClick={fetchRoom}
+                            >새로고침</Refresh_button>
+                        </div>
+                    </div><br></br>
                     <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_list>
                 <Room_create>
