@@ -238,7 +238,7 @@ const ExitButton = styled.button`
 `
 const Member =({member})=>{
     return(
-        <div style={{display:'flex', height:"10%"}}>
+        <div style={{display:'flex', height:"10%", padding:"5px"}}>
             <p>{member.nickname}</p>
             <audio id={member.id}></audio>
         </div>
@@ -266,13 +266,14 @@ function Room() {
 
     const [songURL, setSongURL] = useState();
 
+    const [nowPlaying, setnowPlaying] = useState({id:"", title:"",url:""});
+
     const [playing, setPlaying] = useState(false);
 
     const handleURLChange =(e)=>{
         setSongURL(e.target.value)
     }
 
-    const video = useRef(null);
     let audioCtx = new AudioContext();
     let localSource 
     let localgain = audioCtx.createGain();
@@ -286,20 +287,25 @@ function Room() {
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         
+        //song event
         user.socket.on("showReservedSong", (senderID,title, url)=>{
             songList.push({id:senderID,title:title,url:url})
             setSongs([...songList])
             console.log(songList)
         })
 
-        user.socket.on("playReservedSong", (play)=>{
-            setPlaying(true)
-            setVideo(songs.find(song=>song.url==play).url);
-            songList.shift()
-            setSongs([...songList])
-            console.log(songList)
+        user.socket.on("playReservedSong", (playData)=>{
+            setPlaying(true);
+            setVideo(songList[0].url);
+            songList.shift();
+            setSongs([...songList]);
+            setnowPlaying(playData)
         })
 
+        user.socket.on("setPlayingStop", ()=>{
+            setPlaying(flase);
+            setnowPlaying({id:"", title:"",url:""});
+        })
 
         //audio event 등록
         
@@ -363,11 +369,11 @@ function Room() {
     useEffect(()=>{
         if(songs.length>0&&!playing&&(songs[0].id==user.socket.id)){
             setTimeout(() => {
-                user.socket.emit("playSong",user.roomInfo,songs[0].url)
+                user.socket.emit("playSong",user.roomInfo,songs[0])
             }, 3000);
         }
 
-    },[songs])
+    },[playing, songs])
 
     //Audio connection 함수
     const setOffer = async (offer, senderID) => {
@@ -511,15 +517,17 @@ function Room() {
                 videoId: ytbID,
                 playerVars: { 'autoplay': 1, 'controls': 0 },
                 events:{
-
+                    onStateChange: songUpdate
                 }
                 })
-            console.log(song.getIframe().contentWindow.document.getElementsByTagName("video")[0])
-        }
-        else{
-
         }
         
+    }
+    
+    const songUpdate = (e)=>{
+        if((e.target.data!=1)&&(nowPlaying.id==user.socket.id)){
+            socket.emit("setStop", user.roomInfo)
+        }
     }
 
 
@@ -565,7 +573,7 @@ function Room() {
             <ViewTextarea></ViewTextarea>
             <div style={{flex:"12", border: "1px solid lightgray", borderRadius: "10px",pointerEvents:"none"}} id='player'>
             </div>           
-            <ViewTextarea></ViewTextarea>
+            <ViewTextarea readOnly value={nowPlaying.title}></ViewTextarea>
 
             <ReserveSong>
                 
