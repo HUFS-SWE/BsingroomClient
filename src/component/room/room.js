@@ -24,7 +24,6 @@ const Left = styled.div`
     display:flex;
     flex-direction: column;
     flex:1;
-    width: 100%;
     height: 100%;
     font-size: 1em;
     color: white;
@@ -37,8 +36,6 @@ const Center = styled.div`
     display:flex;
     flex-direction: column;
     flex:3;
-    width: 100%auto;
-    height: 100%auto;
     color: white;
     padding: 0.25em 1em;
     box-sizing: border-box;
@@ -50,8 +47,7 @@ const Right = styled.div`
     display:flex;
     flex-direction: column; 
     flex:1;
-    width: 100%auto;
-    height: 100%auto;
+    height: 100%;
     color: white;
     padding: 0.25em 1em;
     box-sizing: border-box;
@@ -61,9 +57,9 @@ const List = styled.div`
     /* 예약 목록 & 참가자 테두리 */   
     display: flex;
     flex:4;
+    flex-direction: column;
     position: relative;
-    //width: auto;
-    //height: auto;
+    width:100%;
     margin: 0.25em;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
@@ -71,6 +67,7 @@ const List = styled.div`
     border-radius: 10px;
     background-color:rgba(255, 255, 255, 0.1);
     box-sizing: content-box;
+    overflow: hidden;
 `
 
 const Copyright = styled.div`
@@ -101,17 +98,20 @@ const Roomname = styled.div`
 
 const ViewTextarea = styled.input`
     /* 방제, 현재곡 텍스트 */
-    width: 85%;
+    flex: 1;
     font-size: 15px;
     color: white;
     background: transparent;
-    border: none;
+    border: 1px solid lightgray;
+    border-radius: 10px;
     box-sizing: content-box;
+    margin: 0.25em;
+    padding: 0.25em 0.25em;
 `
 
 const ReserveSong = styled.div`
     /* 노래 예약 */
-    flex:2;
+    flex:8;
     position: relative;
     width: auto;
     height: 20%;
@@ -146,8 +146,8 @@ const Sound = styled.div`
     /* 장치 조절 */
     display: flex;
     justify-content: center;
-    width: auto;
-    height: auto;
+    align-items: center;
+    flex:1.5;
     margin: 0.25em;
     padding: 0.25em 0.25em;
     border: 1px solid palevioletred;
@@ -244,6 +244,11 @@ const Member =({member})=>{
         </div>
     );
 }
+const Song =({song})=>{
+    return(
+        <p style={{margin:"2px",width:"100%", overflow:'hidden'}}>{song.title}</p>
+    );
+}
 function Room() {
     const navigate = useNavigate(); 
 
@@ -253,9 +258,19 @@ function Room() {
     let memberList = [];
 
     const [songs, setSongs] = useState([]);
-    let songList = [];
+    let songList = []
+
+    const [warning, setWarning] = useState();
 
     let connections = [];
+
+    const [songURL, setSongURL] = useState();
+
+    const [playing, setPlaying] = useState(false);
+
+    const handleURLChange =(e)=>{
+        setSongURL(e.target.value)
+    }
 
     const video = useRef(null);
     let audioCtx = new AudioContext();
@@ -271,6 +286,21 @@ function Room() {
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         
+        user.socket.on("showReservedSong", (senderID,title, url)=>{
+            songList.push({id:senderID,title:title,url:url})
+            setSongs([...songList])
+            console.log(songList)
+        })
+
+        user.socket.on("playReservedSong", (url)=>{
+            setPlaying(true)
+            setVideo(songs.find(song=>song.url==url));
+            songList.shift()
+            setSongs([...songList])
+            console.log(songList)
+        })
+
+
         //audio event 등록
         
         user.socket.on("offer", (offer, senderID) => {
@@ -298,8 +328,8 @@ function Room() {
             setMembers(tempMemberList)
 
             console.log(memberList, data)
-            
-            if(data.length>memberList.length){
+
+            if(data.length>=memberList.length){
                 addAudioConnect(joined,data);
             }
             else{
@@ -329,6 +359,15 @@ function Room() {
             audioCtx.close();
         }
     }, [])
+
+    useEffect(()=>{
+        if(songs.length>0&&!playing&&(songs[0].id==user.socket.id)){
+            setTimeout(() => {
+                user.socket.emit("playSong",user.roomInfo,songs[0].url)
+            }, 3000);
+        }
+
+    },[songs])
 
     //Audio connection 함수
     const setOffer = async (offer, senderID) => {
@@ -409,34 +448,78 @@ function Room() {
         for(const value of memberList.filter(x => !memberIDList.includes(x.id))){
             let leavedConn = connections.find(data=> data.id == value.id)
             leavedConn.connection.close();
-            const index = connections.indexOf(leavedConn);
+            let IDList = connections.map(a => a.id);
+            const index = IDList.indexOf(leavedConn.id);
+            console.log(index)
             connections.splice(index,1);
         }
-        console.log("audioDisConnected", connections, document.getElementById(value.id).srcObject)
+        console.log("audioDisConnected", connections)
     }
 
-    const createReserv = (e) =>{
+    const createReserv = async (e) =>{
         e.preventDefault();
         //https://www.youtube.com/watch?v=3duS7p-H6KQ
         // https://www.youtube.com/watch?v=gX0rdGE8tW8
-        const ytbID = youtubeParser(e.target.url);
-        const song = new YT.Player('player', {
-            height: '100%',
-            width: '100%',
-            videoId: ytbID,
-            events: {
-                'onReady': (event)=>{
-                    event.target.playVideo();
-                }
+     
+            fetch('https://www.youtube.com/oembed?url='+songURL)
+            .then(response => response.json())
+            .then(data => {
+                user.socket.emit("createReserv",user.roomInfo,user.socket.id,data.title,songURL)
+            })
+            .catch(e=>{
+                setWarning("유효하지 않은 URL입니다.")
+            });
+            
+            setSongURL("");
+            setWarning("")
+        /*
+        https://www.youtube.com/oembed?url=
+        if(ytbID){
+            const song = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: ytbID,
+                playerVars: { 'autoplay': 1, 'controls': 0 },
+                })
+                
+            console.log(song)
+            if(song.u){
+                songList.push(song)
+                setSongs(songList)
+                setWarning("")
+            }else{
+                setWarning("원저작자가 사용을 거부한 영상입니다.")
             }
-          });
-        console.log(song)
+        }else{
+            setWarning("유효하지 않은 URL입니다.")
+        }
+        */
         //user.socket.emit('createReserv', url);
     }
     const youtubeParser = (url) =>{
         var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
         var match = url.match(regExp);
         return (match&&match[7].length==11)? match[7] : false;
+    }
+
+    const setVideo =(url)=>{
+        const ytbID = youtubeParser(url);
+        if(ytbID){
+            const song = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: ytbID,
+                playerVars: { 'autoplay': 1, 'controls': 0 },
+                events:{
+
+                }
+                })
+            console.log(song.getIframe().contentWindow.document.getElementsByTagName("video")[0])
+        }
+        else{
+
+        }
+        
     }
 
 
@@ -453,13 +536,12 @@ function Room() {
         <Left>
 
             <List>
-                <div>
-                예약목록 <br></br><br></br>
-                <textarea cols="25" rows="15" 
-                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
-                        resize: "none"}}>
-                    <input type='text'></input>
-                </textarea>
+                <p  style={{width:"100%"}}>예약목록</p> <br></br><br></br>
+                <div style={{width:"100%",overflowY:'auto', overflowX:'hidden'}}>
+                {songs.map(song => (
+                    <Song song={song}/>
+                ))
+                }
                 </div>
             </List>
 
@@ -480,36 +562,28 @@ function Room() {
         </Left>
 
         <Center>
-            
-            <br></br><p>
-                (방제) <ViewTextarea></ViewTextarea>
-            </p><br></br>
-
-            <div width="100%" height="100%" id='player'>
-                <video ref={video}></video>
+            <ViewTextarea></ViewTextarea>
+            <div style={{flex:"12", border: "1px solid lightgray", borderRadius: "10px",pointerEvents:"none"}} id='player'>
             </div>           
-            
-            <br></br><p>
-                현재곡: <ViewTextarea></ViewTextarea>
-            </p><br></br>
+            <ViewTextarea></ViewTextarea>
 
             <ReserveSong>
                 
                 <form onSubmit={createReserv}><center>
                     <input type='url' placeholder='반주 URL' 
-                        style={{position: 'relative', top:'20px', 
+                        style={{position: 'relative', 
                                 width:"70%", height:"25px",
-                                border:"none", borderRadius:"5px"}}
-                        name = "url">
-                    </input><br></br><br></br></center>
+                                border:"none", borderRadius:"5px", marginTop:"20px"}}
+                        name = "url" value={songURL} onChange={handleURLChange}>
+                    </input><input readOnly type="test" value={warning} style={{backgroundColor:"transparent", color:"red", width:"70%",border:"none"}}></input></center>
                     <SongReserveButton type='submit'>예약</SongReserveButton>
                 </form>
                 
             </ReserveSong>
             
             <Sound>
-                Input <input type='range'></input> &nbsp; &nbsp;
-                Output <input type='range'></input>
+                <p>Input</p><input type='range'></input> &nbsp; &nbsp;
+                <p>Output</p><input type='range'></input>
             </Sound> 
 
         </Center>
