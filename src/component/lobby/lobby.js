@@ -7,6 +7,8 @@ import RoomList from './RoomList';
 import CreateRoom from './CreateRoom';
 import {io} from 'socket.io-client'
 import {UserDispatch} from '../../app.js'
+import SearchInput from './searchInput';
+import Search from './searchInput';
 
 //style 정의
 const Background = styled.div`
@@ -73,6 +75,18 @@ const Room_search = styled.div`
     margin: 10px 10px;
     width: 100%;
 `
+const Refresh_button = styled.button`
+    width: 80px;
+    height: 28px;
+    border: solid gray 1px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 2px 2px navy;
+    &:hover {
+        background: #FFFFAB;}
+    &:active {
+        background: #FFECAB;}
+`
 const Room_create = styled.div`
     flex: 1;
     padding: 10px;
@@ -105,7 +119,7 @@ const Volume = styled.div`
     display: flex;
     position: absolute;
     width: 400px;
-    margin: 27px 220px;
+    margin: 27px 260px;
     padding: 15px 15px;
     justify-content: center;
     align-items: center;
@@ -205,6 +219,16 @@ function Lobby() {
     //       )
     //     );
     //   };
+
+
+    //search컴포넌트 관련 상태 정리
+    // const {searchinput} = searchinput; 
+
+    // const onclick = (searchinput) => {        //'검색' 클릭 시 실행
+    //     Search(searchinput)
+    // };
+
+
     return (
         <Background>
             <Header>
@@ -218,15 +242,15 @@ function Lobby() {
             
             <Room_list_create>
                 <Room_list>
-                    <h2>ROOM LIST</h2>
+                    <h2 style={{fontSize:"20px"}}>ROOM LIST</h2><br></br>
                     <div style={{display:'flex'}}>
-                    <div style={{flex:2}}><input type='text'></input><button style={{width:"50px", height:"30px",
-                                                                            backgroundColor:"lightgreen",
-                                                                             border:"solid 1px #333333",
-                                                                            borderRadius:"5px"}}
-                                                                        active={{backgroundColor:"#66CC33"}}>검색</button></div>
-                    <div style={{flex:1}}><button onClick={fetchRoom}>새로고침</button></div>
-                    </div>
+                        <div style={{flex:2}}>
+                        <SearchInput type='text' onClick={Search}/></div>
+                        <div style={{flex:1}}>
+                            <Refresh_button onClick={fetchRoom}
+                            >새로고침</Refresh_button>
+                        </div>
+                    </div><br></br>
                     <RoomList rooms={rooms} onEnter={onEnter}/>
                 </Room_list>
                 <Room_create>
