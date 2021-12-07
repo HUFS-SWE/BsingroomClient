@@ -231,7 +231,6 @@ function Room() {
     let localgain = audioCtx.createGain();
     localgain.gain.value = 1;
 
-   
     useEffect(()=>{
 
         //Youtube API   
@@ -273,6 +272,13 @@ function Room() {
            
             setMembers(tempMemberList)
             memberList = tempMemberList.slice();
+
+            if(memberList.length==1){
+                document.getElementById(user.socket.id).srcObject = user.mediaStream;
+                localSource = audioCtx.createMediaStreamSource(document.getElementById(user.socket.id).srcObject)
+                localSource.connect(localgain);
+                localSource.connect(audioCtx.destination);
+            }
         })
 
         user.socket.on("breakRoom",()=>{
@@ -311,12 +317,6 @@ function Room() {
     const addAudioConnect=(join,data)=>{
         let memberIDList = []
         memberList.forEach(mb=>memberIDList.push(mb.id))
-        if(memberIDList.length==1){
-            document.getElementById(user.socket.id).srcObject = user.mediaStream;
-            localSource = audioCtx.createMediaStreamSource(document.getElementById(user.socket.id).srcObject)
-            localSource.connect(localgain);
-            localSource.connect(audioCtx.destination);
-        }
         for(const value of data){
             if(!memberIDList.includes(value.id)&&value.id!=user.socket.id){
                 let connection = new RTCPeerConnection({
