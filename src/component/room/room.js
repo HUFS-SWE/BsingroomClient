@@ -239,9 +239,6 @@ const ExitButton = styled.button`
     box-shadow: 3px 3px navy;
 `
 
-
-
-
 const store = []
 
 function Room() {
@@ -255,7 +252,6 @@ function Room() {
 
     const [chats, setChats] = useState([
     ])
-
 
     const video = useRef(null);
     
@@ -302,7 +298,7 @@ function Room() {
             setMembers(memberList)
         })
 
-        //채팅 서버에서 이벤트 받기
+        //서버에서 채팅 내용  받기
 
         user.socket.on('showChat', (content) => {        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
             store.push(content)
@@ -419,7 +415,7 @@ function Room() {
         //user.socket.emit('createReserv', url);
     }
 
-
+    //채팅 입력해서 서버로 보내기
     const [inputs, setInputs] = useState({
         chat: '',
     })
@@ -480,12 +476,6 @@ function Room() {
                 <div>
                 참가자<br></br><br></br>
                 {members}
-                {/* <textarea cols="25" rows="15"
-                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
-                        borderColor: "white",
-                        resize: "none"}}>
-                            {membersss}
-                    </textarea> */}
                 </div>   
             </List>
 
