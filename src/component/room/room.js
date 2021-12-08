@@ -277,7 +277,7 @@ function Room() {
     }
 
     const setnowSong = (state)=>{
-        let nowSong = state;
+        nowSong = state;
     }
 
     const handleURLChange =(e)=>{
@@ -318,7 +318,7 @@ function Room() {
             songList = [...list]
             setSongs([...songList])
             setPlaying(true);
-            setVideo(songList[0].url,currentTime);
+            setVideo(url,currentTime);
             setSongs([...songList]);
             setnowPlaying({id:id, title:title, url:url})
             setnowSong({id:id, title:title, url:url})
@@ -333,11 +333,11 @@ function Room() {
 
         })
 
-        user.socket.on("showPlayingVideo", (offer, receiverID) => {
+        user.socket.on("showPlayingVideo", (receiverID) => {
             console.log(user.host,playing,player)
             console.log(receiverID,nowSong.id,nowSong.title,nowSong.url,player.getCurrentTime(),songList)
             if(user.host&&playing&&player){
-                user.socket.emit("sendPlayingVideo",receiverID,nowPlaying.id,nowPlaying.title,nowPlaying.url,player.getCurrentTime(),songList)
+                user.socket.emit("sendPlayingVideo",receiverID,nowSong.id,nowSong.title,nowSong.url,player.getCurrentTime(),songList)
             }
           });
 
@@ -359,7 +359,7 @@ function Room() {
         //Room event 등록
         user.socket.emit('fetchMember', user.roomInfo)  //첫 접속 시 발생
         if(!user.host){
-            user.socket.emit('fetchVideo', user.roomInfo) //첫 접속 시 발생
+            user.socket.emit('fetchVideo',user.roomInfo, user.socket.id) //첫 접속 시 발생
         }
 
         user.socket.on("showMemberList", (data, joined)=>{
