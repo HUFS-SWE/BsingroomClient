@@ -267,13 +267,17 @@ function Room() {
     const [songURL, setSongURL] = useState();
 
     const [nowPlaying, setnowPlaying] = useState({id:"", title:"",url:""});
-
+    let nowSong = {};
     let playing = false;
 
     let player;
 
     const setPlaying=(state)=>{
         playing = state;
+    }
+
+    const setnowSong = (state)=>{
+        let nowSong = state;
     }
 
     const handleURLChange =(e)=>{
@@ -306,13 +310,18 @@ function Room() {
             songList.shift();
             setSongs([...songList]);
             setnowPlaying(playData)
+            setnowSong(playData)
         })
 
-        user.socket.on("fetchPlayingVideo", (id, title, url,currentTime, songList)=>{
+        user.socket.on("fetchPlayingVideo", (id, title, url,currentTime, list)=>{
+            console.log(id, title, url,currentTime, list)
+            songList = [...list]
+            setSongs([...songList])
             setPlaying(true);
             setVideo(songList[0].url,currentTime);
             setSongs([...songList]);
             setnowPlaying({id:id, title:title, url:url})
+            setnowSong({id:id, title:title, url:url})
         })
 
 
