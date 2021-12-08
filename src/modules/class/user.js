@@ -7,7 +7,7 @@ export default class User{
         this.userIcon = userIcon;
         this.nickname = nickname;
         this.mediaStream = mediaStream;
-        this.socket.emit("getNickname", this.nickname)
+        this.socket.emit("getNickname", this.nickname, this.userIcon)
     
     }
     //guest (host==false)
