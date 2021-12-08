@@ -329,11 +329,13 @@ function Room() {
             setPlaying(false);
             player.clearVideo();
             setnowPlaying({id:"", title:"",url:""});
+            setnowSong({});
+
         })
 
         user.socket.on("showPlayingVideo", (offer, receiverID) => {
             console.log(user.host,playing,player)
-            console.log(receiverID,nowPlaying.id,nowPlaying.title,nowPlaying.url,player.getCurrentTime(),songList)
+            console.log(receiverID,nowSong.id,nowSong.title,nowSong.url,player.getCurrentTime(),songList)
             if(user.host&&playing&&player){
                 user.socket.emit("sendPlayingVideo",receiverID,nowPlaying.id,nowPlaying.title,nowPlaying.url,player.getCurrentTime(),songList)
             }
