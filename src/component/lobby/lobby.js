@@ -130,7 +130,7 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "https://bsingroom.loca.lt/";
+const ENDPOINT = "https://bsingroom4.loca.lt/";
 const socket = io.connect(ENDPOINT);
 
 //Lobby 컴포넌트 정의
@@ -145,11 +145,15 @@ function Lobby() {
 
         socket.on('showRoomList', (rooms)=>{        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.
             let roomList = [];
+            console.log(rooms)
             for(var i=0; i<rooms.length; ++i){
-                if (rooms[i])//if(rooms[i].slice(3)=="room")
-                roomList.push({roomname:rooms[i]}) 
+                //if (rooms[i])
+                if(rooms[i].item.slice(0,4)=="room")
+                roomList.push({roomname:rooms[i].item, membercount:rooms[i].leng})
+                console.log({roomname:rooms[i].item, membercount:rooms[i].leng}) 
+                console.log(rooms[i])
             }
-            console.log(rooms.length)
+            console.log(roomList)
             setRooms(roomList)
         })
 

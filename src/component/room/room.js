@@ -6,8 +6,12 @@ import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
 import SendChat from './sendChat'
-
 import { stepIconClasses } from '@mui/material';
+import mute from "../../img/iconfinder-mute-mic-microphone-audio-sound-4593173_122241.png";
+import unmute from "../../img/microphone-black-shape_icon-icons.com_73491.png";
+
+
+
 
 const Background = styled.div`
     /* 배경 */
@@ -24,7 +28,7 @@ const Left = styled.div`
     /* 왼쪽 (예약목록, 참가자) */
     display:flex;
     flex-direction: column;
-    flex:1;
+    flex:2;
     width: 100%;
     height: 100%;
     font-size: 1em;
@@ -37,7 +41,7 @@ const Center = styled.div`
     /* 가운데(방제, 영상, 현재곡, 반주예약, 장치조절) */
     display:flex;
     flex-direction: column;
-    flex:3;
+    flex:5;
     width: 100%auto;
     height: 100%auto;
     color: white;
@@ -50,7 +54,7 @@ const Right = styled.div`
     position: relative;
     display:flex;
     flex-direction: column; 
-    flex:1;
+    flex:2;
     width: 100%auto;
     height: 100%auto;
     color: white;
@@ -61,7 +65,8 @@ const Right = styled.div`
 const List = styled.div`
     /* 예약 목록 & 참가자 테두리 */   
     display: flex;
-    flex:4;
+    flex:5;
+    flex-direction: column;
     position: relative;
     //width: auto;
     //height: auto;
@@ -100,10 +105,12 @@ const Roomname = styled.div`
     box-sizing: content-box;
 `
 
-const ViewTextarea = styled.input`
+const ViewTextarea = styled.div`
     /* 방제, 현재곡 텍스트 */
+    flex: 1;
+    align-items:'center';
     width: 85%;
-    font-size: 15px;
+    font-size: 30px;
     color: white;
     background: transparent;
     border: none;
@@ -112,7 +119,7 @@ const ViewTextarea = styled.input`
 
 const ReserveSong = styled.div`
     /* 노래 예약 */
-    flex:2;
+    flex:4;
     position: relative;
     width: auto;
     height: 20%;
@@ -145,8 +152,10 @@ const SongReserveButton = styled.button`
 
 const Sound = styled.div`
     /* 장치 조절 */
+    flex: 2;
     display: flex;
     justify-content: center;
+    align-items:'center';
     width: auto;
     height: auto;
     margin: 0.25em;
@@ -176,10 +185,10 @@ const Chatting = styled.div`
     /* 채팅 박스 */
     display: flex;
     flex-direction: column;
-    flex: 8;
+    flex: 10;
     position: relative;
     width: auto;
-    height: auto;
+    height: 390px;
     margin: 0.25em;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
@@ -197,7 +206,6 @@ const ChatInput = styled.div`
     justify-content: center;
     width: auto;
     height: auto;
-    margin-bottom: 10px;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
     border-color: lightgray;
@@ -205,28 +213,12 @@ const ChatInput = styled.div`
     background-color:transparent;
     word-break:break-all;
 `
-const Chatpush = styled.button`
-    /* 채팅 전송 버튼 */
-    position: relative;
-    cursor: pointer;
-    bottom: 7px;
-    left: 5px;
-    height: 25px; 
-    width: 30px;
-    background-color: #EEEEEE;
-    border: none;
-    border-radius: 2px;
-    box-shadow: 2px 2px navy;
-    &:hover {
-        background: white;}
-    &:active {
-        background: #59DA50;}
-`
+
 
 const Exit = styled.div`
     /* 방 나가기 구역 */
     display: flex;
-    flex:3;
+    flex:2;
     align-items: center;
     justify-content: center;
 `
@@ -237,6 +229,16 @@ const ExitButton = styled.button`
     position: relative;
     cursor: pointer;
     box-shadow: 3px 3px navy;
+`
+
+const Mute = styled.img`
+    width: 20px;
+    height: 20px;
+`
+
+const Unmute = styled.img`
+    width: 20px;
+    height: 20px;
 `
 
 const store = []
@@ -292,10 +294,11 @@ function Room() {
             }
             let memberList = [];
             for(const value of data){
-                memberList.push(value.nickname) 
+                memberList.push([value.icon, value.nickname]) 
             }
             console.log(memberList)
             setMembers(memberList)
+            console.log(members)
         })
 
         //서버에서 채팅 내용  받기
@@ -448,6 +451,27 @@ function Room() {
 		)) 
     };
 
+    const [toggle, setToggle] = useState(false);
+
+
+    const onMute = () => {
+        if (toggle == false){
+            setToggle(true)
+        } else {
+            setToggle(false)
+        }
+
+    }
+
+    const showMembers = () => {
+        console.log(mute)
+        return members.map((data, index) => (
+            <div key={index}>
+                {data[0]} <span>{data[1]}</span> <button onClick={onMute} style={{float:'right'}}>{toggle ? <Mute src={mute}></Mute> : <Unmute src={unmute}></Unmute>}</button>
+            </div>
+        ))
+    };
+
     const exitToLobby = () =>{
         store.splice(0)
         user.socket.emit('leaveRoom', user.roomInfo, user.host)
@@ -473,10 +497,13 @@ function Room() {
             </List>
 
             <List>
-                <div>
-                참가자<br></br><br></br>
-                {members}
-                </div>   
+
+            <div style={{ width: '100%', flex: '1' }}>채팅</div>
+            <div style={{ width: '100%', flex: '9' }}>
+                    {showMembers()} 
+                    </div>
+            
+                 
             </List>
 
             <Copyright><center>
@@ -487,17 +514,14 @@ function Room() {
 
         <Center>
             
-            <br></br><p>
-                (방제) <ViewTextarea></ViewTextarea>
-            </p><br></br>
-
-            <div width="100%" height="100%" id='player'>
+        
+            <ViewTextarea>{user.roomInfo.substr(5)}</ViewTextarea>
+            
+            <div width="100%" id='player' style={{flex:8}}>
                 <video ref={video}></video>
             </div>           
             
-            <br></br><p>
-                현재곡: <ViewTextarea></ViewTextarea>
-            </p><br></br>
+            <ViewTextarea>현재곡: </ViewTextarea>
 
             <ReserveSong>
                 
@@ -514,7 +538,7 @@ function Room() {
             </ReserveSong>
             
             <Sound>
-                Input <input type='range'></input> &nbsp; &nbsp;
+                Input <input type='range'></input> 
                 Output <input type='range'></input>
             </Sound> 
 
@@ -528,7 +552,7 @@ function Room() {
 
             <Chatting>
                     <div style={{ width: '100%', flex: '1' }}>채팅</div>
-                    <div style={{ overflow: 'scroll', width: '100%', flex: '9' }}>
+                    <div style={{ overflow: 'auto', width: '100%', flex: '9' }}>
                         {chatList()}
                     </div>
             </Chatting>
