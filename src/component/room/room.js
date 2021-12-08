@@ -522,10 +522,9 @@ function Room() {
     }
     
     const songUpdate = (e)=>{
-        console.log(nowSong.id, user.socket.id)
-        console.log((e.target.data==0)&&(nowSong.id==user.socket.id))
-        if((e.target.data=="0")&&(nowSong.id==user.socket.id)){
-            user.socket.emit("setStop", user.roomInfo)
+        console.log(e.data)
+        if((e.target.data!=1)&&(nowPlaying.id==user.socket.id)){
+            socket.emit("setStop", user.roomInfo)
         }
     }
 
