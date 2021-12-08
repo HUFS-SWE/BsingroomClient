@@ -268,9 +268,13 @@ function Room() {
 
     const [nowPlaying, setnowPlaying] = useState({id:"", title:"",url:""});
 
-    const [playing, setPlaying] = useState(false);
+    let playing = false;
 
     let player;
+
+    const setPlaying=(state)=>{
+        playing = state;
+    }
 
     const handleURLChange =(e)=>{
         setSongURL(e.target.value)
@@ -319,7 +323,9 @@ function Room() {
         })
 
         user.socket.on("showPlayingVideo", (offer, receiverID) => {
-            if(user.host&&palying&&player){
+            console.log(user.host,playing,player)
+            console.log(receiverID,nowPlaying.id,nowPlaying.title,nowPlaying.url,player.getCurrentTime(),songList)
+            if(user.host&&playing&&player){
                 user.socket.emit("sendPlayingVideo",receiverID,nowPlaying.id,nowPlaying.title,nowPlaying.url,player.getCurrentTime(),songList)
             }
           });
@@ -510,7 +516,7 @@ function Room() {
     const setVideo =(url, time)=>{
         const ytbID = youtubeParser(url);
         if(ytbID){
-            palyer = new YT.Player('player', {
+            player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
                 startSeconds: time,
