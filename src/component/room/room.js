@@ -5,7 +5,7 @@ import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
-import { stepIconClasses } from '@mui/material';
+import User from '../../modules/class/user';
 
 const Background = styled.div`
     /* 배경 */
@@ -98,7 +98,7 @@ const Roomname = styled.div`
     box-sizing: content-box;
 `
 
-const ViewTextarea = styled.input`
+const ViewTextarea = styled.div`
     /* 방제, 현재곡 텍스트 */
     width: 85%;
     font-size: 15px;
@@ -250,7 +250,11 @@ function Room() {
     
     let audioCtx = new AudioContext();
 
+
+    const [rooms, setRooms] = useState([]);
+
     useEffect(()=>{
+        
 
         //Youtube API
         var tag = document.createElement('script');
@@ -405,8 +409,12 @@ function Room() {
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
 
-    return (
+    console.log(user);
+    console.log(user.roomInfo);
 
+    
+
+    return (
         <Background>
         
         <Left>
@@ -444,7 +452,7 @@ function Room() {
         <Center>
             
             <br></br><p>
-                (방제) <ViewTextarea></ViewTextarea>
+                <ViewTextarea> (방제) {user.roomInfo.slice(5)} </ViewTextarea>
             </p><br></br>
 
             <div width="100%" height="100%" id='player'>
