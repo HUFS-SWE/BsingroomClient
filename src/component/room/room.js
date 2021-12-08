@@ -272,10 +272,6 @@ function Room() {
 
     let player;
 
-    const setnowSong = (state)=>{
-        nowSong = state;
-    }
-
     const handleURLChange =(e)=>{
         setSongURL(e.target.value)
     }
@@ -292,7 +288,7 @@ function Room() {
         tag.src = 'https://www.youtube.com/iframe_api';
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        
+
         //song event
         user.socket.on("showReservedSong", (senderID,title, url)=>{
             songList.push({id:senderID,title:title,url:url})
@@ -303,20 +299,19 @@ function Room() {
         user.socket.on("playReservedSong", (playData)=>{
             console.log(playData)
             setPlaying(true);
-            setVideo(songList[0].url,0);
+            setVideo(playData.url);
             songList.shift();
             setSongs([...songList]);
             setnowPlaying(playData)
-            setnowSong(playData)
+            nowSong = playData
         })
 
 
         user.socket.on("setPlayingStop", ()=>{
             console.log("stop")
             setPlaying(false);
-            player.clearVideo();
             setnowPlaying({id:"", title:"",url:""});
-            setnowSong({id:"", title:"",url:""});
+            nowSong = {id:"", title:"",url:""};
 
         })
 
@@ -383,7 +378,7 @@ function Room() {
     }, [])
 
     useEffect(()=>{
-        console.log(playing)
+        console.log(playing,songs)
         if(songs.length>0&&!playing&&(songs[0].id==user.socket.id)){
             setTimeout(() => {
                 user.socket.emit("playSong",user.roomInfo,songs[0])
@@ -481,21 +476,19 @@ function Room() {
 
     const createReserv = async (e) =>{
         e.preventDefault();
-        //https://www.youtube.com/watch?v=3duS7p-H6KQ
-        // https://www.youtube.com/watch?v=gX0rdGE8tW8
      
-            fetch('https://www.youtube.com/oembed?url='+songURL)
-            .then(response => response.json())
-            .then(data => {
-                user.socket.emit("createReserv",user.roomInfo,user.socket.id,data.title,songURL)
-            })
-            .catch(e=>{
-                setWarning("유효하지 않은 URL입니다.")
-            });
-            
-            setSongURL("");
-            setWarning("")
+        fetch('https://www.youtube.com/oembed?url='+songURL)
+        .then(response => response.json())
+        .then(data => {
+            user.socket.emit("createReserv",user.roomInfo,user.socket.id,data.title,songURL)
+        })
+        .catch(e=>{
+            setWarning("유효하지 않은 URL입니다.")
+        });
         
+        setSongURL("");
+        setWarning("")
+    
         //user.socket.emit('createReserv', url);
     }
     const youtubeParser = (url) =>{
@@ -504,30 +497,31 @@ function Room() {
         return (match&&match[7].length==11)? match[7] : false;
     }
 
-    const setVideo =(url, time)=>{
+    const setVideo =( url)=>{
         const ytbID = youtubeParser(url);
         if(ytbID){
             player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
-                startSeconds: time,
                 videoId: ytbID,
                 playerVars: { 'autoplay': 1, 'controls': 0 },
                 events:{
                     onStateChange: songUpdate
                 }
-                })
+                });
         }
         
     }
     
     const songUpdate = (e)=>{
-        console.log(e.data)
-        if((e.target.data!=1)&&(nowPlaying.id==user.socket.id)){
-            socket.emit("setStop", user.roomInfo)
+        console.log(e.target)
+        if((e.data==0)){
+            e.target.h.replaceWith(e.target.m)
+            if(nowSong.id==user.socket.id){
+                user.socket.emit("setStop", user.roomInfo)
+            }
         }
     }
-
 
     const exitToLobby = () =>{
         user.socket.emit('leaveRoom', user.roomInfo, user.host)
