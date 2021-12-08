@@ -130,7 +130,7 @@ const Volume = styled.div`
 
 
 //socket객체 정의
-const ENDPOINT = "https://bsingroom4.loca.lt/";
+const ENDPOINT = "https://bsingroom.loca.lt/";
 const socket = io.connect(ENDPOINT);
 
 //Lobby 컴포넌트 정의
@@ -150,12 +150,8 @@ function Lobby() {
                 //if (rooms[i])
                 if(rooms[i].item.slice(0,4)=="room")
                 roomList.push({roomname:rooms[i].item, membercount:rooms[i].leng})
-                console.log({roomname:rooms[i].item, membercount:rooms[i].leng}) 
-                console.log(rooms[i])
             }
-            console.log(roomList)
             setRooms(roomList)
-            fetchRoom()
         })
 
 
@@ -175,8 +171,6 @@ function Lobby() {
         }
 
     },[]);
-    
-    console.log(user);
 
     //RoomList컴포넌트 관련 상태관리
     const [rooms, setRooms] = useState([]);

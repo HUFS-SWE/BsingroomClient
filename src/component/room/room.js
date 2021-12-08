@@ -28,7 +28,6 @@ const Left = styled.div`
     display:flex;
     flex-direction: column;
     flex:2;
-    width: 100%;
     height: 100%;
     font-size: 1em;
     color: white;
@@ -41,8 +40,7 @@ const Center = styled.div`
     display:flex;
     flex-direction: column;
     flex:5;
-    width: 100%auto;
-    height: 100%auto;
+    height: 100%;
     color: white;
     padding: 0.25em 1em;
     box-sizing: border-box;
@@ -54,8 +52,7 @@ const Right = styled.div`
     display:flex;
     flex-direction: column; 
     flex:2;
-    width: 100%auto;
-    height: 100%auto;
+    height: 100%;
     color: white;
     padding: 0.25em 1em;
     box-sizing: border-box;
@@ -67,8 +64,7 @@ const List = styled.div`
     flex:5;
     flex-direction: column;
     position: relative;
-    //width: auto;
-    //height: auto;
+    width:100%;
     margin: 0.25em;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
@@ -76,6 +72,7 @@ const List = styled.div`
     border-radius: 10px;
     background-color:rgba(255, 255, 255, 0.1);
     box-sizing: content-box;
+    overflow: hidden;
 `
 
 const Copyright = styled.div`
@@ -107,18 +104,19 @@ const Roomname = styled.div`
 const ViewTextarea = styled.div`
     /* 방제, 현재곡 텍스트 */
     flex: 1;
-    align-items:'center';
-    width: 85%;
-    font-size: 30px;
+    font-size: 15px;
     color: white;
     background: transparent;
-    border: none;
+    border: 1px solid lightgray;
+    border-radius: 10px;
     box-sizing: content-box;
+    margin: 0.25em;
+    padding: 0.25em 0.25em;
 `
 
 const ReserveSong = styled.div`
     /* 노래 예약 */
-    flex:4;
+    flex:8;
     position: relative;
     width: auto;
     height: 20%;
@@ -154,9 +152,8 @@ const Sound = styled.div`
     flex: 2;
     display: flex;
     justify-content: center;
-    align-items:'center';
-    width: auto;
-    height: auto;
+    align-items: center;
+    flex:1.5;
     margin: 0.25em;
     padding: 0.25em 0.25em;
     border: 1px solid palevioletred;
@@ -229,6 +226,22 @@ const ExitButton = styled.button`
     cursor: pointer;
     box-shadow: 3px 3px navy;
 `
+const Member =({member, toggle})=>{
+    console.log(member)
+    return(
+        <div style={{display:'flex', height:"15%",fontSize:"large" , padding:"5px"}}>
+            <p style={{flex:1}}>{member.icon}</p>
+            <p style={{flex:4}}>{member.nickname}</p>
+            <audio id={member.id}></audio>
+            <div style={{flex:1}}>{toggle ? <Mute src={mute}></Mute> : <Unmute src={unmute}></Unmute>}</div>
+        </div>
+    )};
+    
+const Song =({song})=>{
+    return(
+        <p style={{marginBottom:"5px",width:"100%", overflow:'hidden',fontSize:"large" }}>{song.title}</p>
+    );
+}
 
 const Mute = styled.img`
     width: 20px;
@@ -248,15 +261,34 @@ function Room() {
     const {user, setuser} = useContext(UserDispatch);
 
     const [members, setMembers] = useState([]);
+    let memberList = [];
+
+    const [songs, setSongs] = useState([]);
+    let songList = []
+
+    const [warning, setWarning] = useState();
+
     let connections = [];
-    let songList = [];
+
+    const [songURL, setSongURL] = useState();
+
+    const [nowPlaying, setnowPlaying] = useState({id:"", title:"",url:""});
+    const [playing, setPlaying] = useState(false);
+    let nowSong = {};
+
+    let player;
+
+    const handleURLChange =(e)=>{
+        setSongURL(e.target.value)
+    }
 
     const [chats, setChats] = useState([
     ])
-
-    const video = useRef(null);
     
     let audioCtx = new AudioContext();
+    let localSource 
+    let localgain = audioCtx.createGain();
+    localgain.gain.value = 1;
 
 
     const [rooms, setRooms] = useState([]);
@@ -264,12 +296,40 @@ function Room() {
     useEffect(()=>{
         
 
-        //Youtube API
+        //Youtube API   
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        
+
+        //song event
+        user.socket.on("showReservedSong", (senderID,title, url)=>{
+            songList.push({id:senderID,title:title,url:url})
+            setSongs([...songList])
+            console.log(songList)
+        })
+
+        user.socket.on("playReservedSong", (playData)=>{
+            console.log(playData)
+            setPlaying(true);
+            setVideo(playData.url);
+            songList.shift();
+            setSongs([...songList]);
+            setnowPlaying({id:playData.id, title:playData.title,url:playData.url})
+            nowSong = playData
+        })
+
+
+        user.socket.on("setPlayingStop", ()=>{
+            console.log("stop")
+            setPlaying(false);
+            setnowPlaying({id:"", title:"",url:""});
+            nowSong = {id:"", title:"",url:""};
+
+        })
+
+    
+
         //audio event 등록
         
         user.socket.on("offer", (offer, senderID) => {
@@ -286,22 +346,36 @@ function Room() {
 
 
         //Room event 등록
-        user.socket.emit('fetchMember', user.roomInfo)
-     
+        user.socket.emit('fetchMember', user.roomInfo)  //첫 접속 시 발생
+        
+
         user.socket.on("showMemberList", (data, joined)=>{
-            if(data.length>members){
+            let tempMemberList = [];
+            for(const value of data){
+                tempMemberList.push({id:value.id, icon:value.icon, nickname:value.nickname}) 
+            }
+           
+            setMembers(tempMemberList)
+
+            console.log(memberList, data)
+
+            if(data.length>=memberList.length){
                 addAudioConnect(joined,data);
             }
             else{
                 audioDisConnect(joined,data);
             }
-            let memberList = [];
-            for(const value of data){
-                memberList.push([value.icon, value.nickname]) 
+
+            memberList = tempMemberList.slice();
+
+            if(memberList.length==1){
+                setTimeout(() => {
+                    document.getElementById(user.socket.id).srcObject = user.mediaStream;
+                    localSource = audioCtx.createMediaStreamSource(document.getElementById(user.socket.id).srcObject)
+                    localSource.connect(localgain);
+                    localSource.connect(audioCtx.destination);
+                }, 100);
             }
-            console.log(memberList)
-            setMembers(memberList)
-            console.log(members)
         })
 
         //서버에서 채팅 내용  받기
@@ -316,14 +390,26 @@ function Room() {
         user.socket.on("breakRoom",()=>{
             exitToLobby()
         })
-
+        
         return ()=>{
             user.socket.removeAllListeners();
-            connection.close();
-            connection = null;
-            audioCtx = null;
+            for(const connection of connections){
+                connection.connection.close();
+            }
+            connections = null;
+            audioCtx.close();
         }
     }, [])
+
+    useEffect(()=>{
+        console.log(playing,songs)
+        if(songs.length>0&&!playing&&(songs[0].id==user.socket.id)){
+            setTimeout(() => {
+                user.socket.emit("playSong",user.roomInfo,songs[0])
+            }, 3000);
+        }
+
+    },[playing, songs])
 
     //Audio connection 함수
     const setOffer = async (offer, senderID) => {
@@ -348,12 +434,11 @@ function Room() {
         iceConn.addIceCandidate(ice);
     }
 
-    const addAudioConnect=(join, data)=>{
-
-        console.log(members, data)
-
+    const addAudioConnect=(join,data)=>{
+        let memberIDList = []
+        memberList.forEach(mb=>memberIDList.push(mb.id))
         for(const value of data){
-            if(!members.includes(value.nickname)&&value.nickname!=user.nickname){
+            if(!memberIDList.includes(value.id)&&value.id!=user.socket.id){
                 let connection = new RTCPeerConnection({
                     iceServers: [
                         {
@@ -372,6 +457,7 @@ function Room() {
                 user.mediaStream.getTracks().forEach(track =>{
                     connection.addTrack(track, user.mediaStream)
                 })
+
                 if(join){
                 connection.createOffer()
                 .then((result)=>{
@@ -386,39 +472,79 @@ function Room() {
                 })
                 
                 connection.addEventListener("addstream", (data)=>{
-                    console.log("addStream");
-                    video.current.srcObject = data.stream;
-                    var gainlocalNode = audioCtx.createGain();
-                    gainlocalNode.gain.value = 0.5;
-                    audioCtx.createMediaStreamSource(data.stream);
-                    gainlocalNode.connect(audioCtx.destination);
-                    video.current.play();
+                    document.getElementById(value.id).srcObject = data.stream
+                    var gainNode = audioCtx.createGain();
+                    var source = audioCtx.createMediaStreamSource(document.getElementById(value.id).srcObject)
+                    source.connect(gainNode);
+                    source.connect(audioCtx.destination);
                 })
+                console.log("audioConnected", connections, document.getElementById(value.id).src)
             }
         }
+        
     }
 
-    const audioDisConnect=(data)=>{
-        console.log(members, data)
+    const audioDisConnect=(joined, data)=>{
+        let memberIDList = []
+        data.forEach(mb=>memberIDList.push(mb.id))
+        for(const value of memberList.filter(x => !memberIDList.includes(x.id))){
+            let leavedConn = connections.find(data=> data.id == value.id)
+            leavedConn.connection.close();
+            let IDList = connections.map(a => a.id);
+            const index = IDList.indexOf(leavedConn.id);
+            console.log(index)
+            connections.splice(index,1);
+        }
+        console.log("audioDisConnected", connections)
     }
 
-    const createReserv = (e) =>{
+    const createReserv = async (e) =>{
         e.preventDefault();
-        //https://www.youtube.com/watch?v=3duS7p-H6KQ
-        // https://www.youtube.com/watch?v=gX0rdGE8tW8
-        const url = e.target.url;
-        const song = new YT.Player('player', {
-            height: '300px',
-            width: '100%',
-            videoId: 'gX0rdGE8tW8',
-            events: {
-                'onReady': (event)=>{
-                    event.target.playVideo();
-                }
-            }
-          });
-        console.log(song)
+     
+        fetch('https://www.youtube.com/oembed?url='+songURL)
+        .then(response => response.json())
+        .then(data => {
+            user.socket.emit("createReserv",user.roomInfo,user.socket.id,data.title,songURL)
+        })
+        .catch(e=>{
+            setWarning("유효하지 않은 URL입니다.")
+        });
+        
+        setSongURL("");
+        setWarning("")
+    
         //user.socket.emit('createReserv', url);
+    }
+    const youtubeParser = (url) =>{
+        var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+        var match = url.match(regExp);
+        return (match&&match[7].length==11)? match[7] : false;
+    }
+
+    const setVideo =( url)=>{
+        const ytbID = youtubeParser(url);
+        if(ytbID){
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: ytbID,
+                playerVars: { 'autoplay': 1, 'controls': 0 },
+                events:{
+                    onStateChange: songUpdate
+                }
+                });
+        }
+        
+    }
+    
+    const songUpdate = (e)=>{
+        console.log(e.target)
+        if((e.data==0)){
+            e.target.h.replaceWith(e.target.m)
+            if(nowSong.id==user.socket.id){
+                user.socket.emit("setStop", user.roomInfo)
+            }
+        }
     }
 
     //채팅 입력해서 서버로 보내기
@@ -466,14 +592,6 @@ function Room() {
 
     }
 
-    const showMembers = () => {
-        console.log(mute)
-        return members.map((data, index) => (
-            <div key={index}>
-                {data[0]} <span>{data[1]}</span> <button onClick={onMute} style={{float:'right'}}>{toggle ? <Mute src={mute}></Mute> : <Unmute src={unmute}></Unmute>}</button>
-            </div>
-        ))
-    };
 
     const exitToLobby = () =>{
         store.splice(0)
@@ -493,24 +611,23 @@ function Room() {
         <Left>
 
             <List>
-                <div>
-                예약목록 <br></br><br></br>
-                <textarea cols="25" rows="15" 
-                        style={{backgroundColor: "rgba(255,255,255,0.5)", 
-                        resize: "none"}}>
-                    <input type='text'></input>
-                </textarea>
+                <p  style={{width:"100%"}}>예약목록</p> <br></br><br></br>
+                <div style={{width:"100%",overflowY:'auto', overflowX:'hidden'}}>
+                {songs.map(song => (
+                    <Song song={song}/>
+                ))
+                }
                 </div>
             </List>
 
             <List>
-
-            <div style={{ width: '100%', flex: '1' }}>채팅</div>
-            <div style={{ width: '100%', flex: '9' }}>
-                    {showMembers()} 
-                    </div>
-            
-                 
+                <div>
+                참가자<br></br><br></br>
+                {members.map(member => (
+                    <Member member={member} toggle={toggle}/>
+                ))
+                }
+                </div>        
             </List>
 
             <Copyright><center>
@@ -520,33 +637,28 @@ function Room() {
         </Left>
 
         <Center>
-            
-        
             <ViewTextarea>{user.roomInfo.substr(5)}</ViewTextarea>
-            
-            <div width="100%" id='player' style={{flex:8}}>
-                <video ref={video}></video>
+            <div style={{flex:"12", border: "1px solid lightgray", borderRadius: "10px",pointerEvents:"none"}} id='player'>
             </div>           
-            
-            <ViewTextarea>현재곡: </ViewTextarea>
+            <ViewTextarea readOnly value={nowPlaying.title}></ViewTextarea>
 
             <ReserveSong>
                 
                 <form onSubmit={createReserv}><center>
                     <input type='url' placeholder='반주 URL' 
-                        style={{position: 'relative', top:'20px', 
+                        style={{position: 'relative', 
                                 width:"70%", height:"25px",
-                                border:"none", borderRadius:"5px"}}
-                        name = "url">
-                    </input><br></br><br></br></center>
+                                border:"none", borderRadius:"5px", marginTop:"20px"}}
+                        name = "url" value={songURL} onChange={handleURLChange}>
+                    </input><input readOnly type="test" value={warning} style={{backgroundColor:"transparent", color:"red", width:"70%",border:"none"}}></input></center>
                     <SongReserveButton type='submit'>예약</SongReserveButton>
                 </form>
                 
             </ReserveSong>
             
             <Sound>
-                Input <input type='range'></input> 
-                Output <input type='range'></input>
+                <p>Input</p><input type='range'></input> &nbsp; &nbsp;
+                <p>Output</p><input type='range'></input>
             </Sound> 
 
         </Center>
