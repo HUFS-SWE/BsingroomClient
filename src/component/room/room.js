@@ -270,6 +270,8 @@ function Room() {
 
     const [playing, setPlaying] = useState(false);
 
+    let player;
+
     const handleURLChange =(e)=>{
         setSongURL(e.target.value)
     }
@@ -296,16 +298,31 @@ function Room() {
 
         user.socket.on("playReservedSong", (playData)=>{
             setPlaying(true);
-            setVideo(songList[0].url);
+            setVideo(songList[0].url,0);
             songList.shift();
             setSongs([...songList]);
             setnowPlaying(playData)
         })
 
+        user.socket.on("fetchPlayingVideo", (id, title, url,currentTime, songList)=>{
+            setPlaying(true);
+            setVideo(songList[0].url,currentTime);
+            setSongs([...songList]);
+            setnowPlaying({id:id, title:title, url:url})
+        })
+
+
         user.socket.on("setPlayingStop", ()=>{
-            setPlaying(flase);
+            setPlaying(false);
+            player.clearVideo();
             setnowPlaying({id:"", title:"",url:""});
         })
+
+        user.socket.on("showPlayingVideo", (offer, receiverID) => {
+            if(user.host&&palying&&player){
+                user.socket.emit("sendPlayingVideo",receiverID,nowPlaying.id,nowPlaying.title,nowPlaying.url,player.getCurrentTime(),songList)
+            }
+          });
 
         //audio event 등록
         
@@ -323,8 +340,11 @@ function Room() {
 
 
         //Room event 등록
-        user.socket.emit('fetchMember', user.roomInfo)
-     
+        user.socket.emit('fetchMember', user.roomInfo)  //첫 접속 시 발생
+        if(!user.host){
+            user.socket.emit('fetchVideo', user.roomInfo) //첫 접속 시 발생
+        }
+
         user.socket.on("showMemberList", (data, joined)=>{
             let tempMemberList = [];
             for(const value of data){
@@ -478,28 +498,7 @@ function Room() {
             
             setSongURL("");
             setWarning("")
-        /*
-        https://www.youtube.com/oembed?url=
-        if(ytbID){
-            const song = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
-                videoId: ytbID,
-                playerVars: { 'autoplay': 1, 'controls': 0 },
-                })
-                
-            console.log(song)
-            if(song.u){
-                songList.push(song)
-                setSongs(songList)
-                setWarning("")
-            }else{
-                setWarning("원저작자가 사용을 거부한 영상입니다.")
-            }
-        }else{
-            setWarning("유효하지 않은 URL입니다.")
-        }
-        */
+        
         //user.socket.emit('createReserv', url);
     }
     const youtubeParser = (url) =>{
@@ -511,7 +510,7 @@ function Room() {
     const setVideo =(url)=>{
         const ytbID = youtubeParser(url);
         if(ytbID){
-            const song = new YT.Player('player', {
+            palyer = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
                 videoId: ytbID,
@@ -525,6 +524,7 @@ function Room() {
     }
     
     const songUpdate = (e)=>{
+        console.log(e.data)
         if((e.target.data!=1)&&(nowPlaying.id==user.socket.id)){
             socket.emit("setStop", user.roomInfo)
         }
