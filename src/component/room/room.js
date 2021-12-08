@@ -5,8 +5,12 @@ import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
-import { stepIconClasses } from '@mui/material';
-import { flexbox } from '@mui/system';
+import SendChat from './sendChat'
+import mute from "../../img/iconfinder-mute-mic-microphone-audio-sound-4593173_122241.png";
+import unmute from "../../img/microphone-black-shape_icon-icons.com_73491.png";
+
+
+
 
 const Background = styled.div`
     /* 배경 */
@@ -23,7 +27,7 @@ const Left = styled.div`
     /* 왼쪽 (예약목록, 참가자) */
     display:flex;
     flex-direction: column;
-    flex:1;
+    flex:2;
     height: 100%;
     font-size: 1em;
     color: white;
@@ -35,7 +39,8 @@ const Center = styled.div`
     /* 가운데(방제, 영상, 현재곡, 반주예약, 장치조절) */
     display:flex;
     flex-direction: column;
-    flex:3;
+    flex:5;
+    height: 100%;
     color: white;
     padding: 0.25em 1em;
     box-sizing: border-box;
@@ -46,7 +51,7 @@ const Right = styled.div`
     position: relative;
     display:flex;
     flex-direction: column; 
-    flex:1;
+    flex:2;
     height: 100%;
     color: white;
     padding: 0.25em 1em;
@@ -56,7 +61,7 @@ const Right = styled.div`
 const List = styled.div`
     /* 예약 목록 & 참가자 테두리 */   
     display: flex;
-    flex:4;
+    flex:5;
     flex-direction: column;
     position: relative;
     width:100%;
@@ -96,7 +101,7 @@ const Roomname = styled.div`
     box-sizing: content-box;
 `
 
-const ViewTextarea = styled.input`
+const ViewTextarea = styled.div`
     /* 방제, 현재곡 텍스트 */
     flex: 1;
     font-size: 15px;
@@ -144,6 +149,7 @@ const SongReserveButton = styled.button`
 
 const Sound = styled.div`
     /* 장치 조절 */
+    flex: 2;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -174,10 +180,11 @@ const NetworkStatus = styled.div`
 const Chatting = styled.div`
     /* 채팅 박스 */
     display: flex;
-    flex: 8;
+    flex-direction: column;
+    flex: 10;
     position: relative;
     width: auto;
-    height: auto;
+    height: 390px;
     margin: 0.25em;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
@@ -195,7 +202,6 @@ const ChatInput = styled.div`
     justify-content: center;
     width: auto;
     height: auto;
-    margin-bottom: 10px;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
     border-color: lightgray;
@@ -203,28 +209,12 @@ const ChatInput = styled.div`
     background-color:transparent;
     word-break:break-all;
 `
-const Chatpush = styled.button`
-    /* 채팅 전송 버튼 */
-    position: relative;
-    cursor: pointer;
-    bottom: 7px;
-    left: 5px;
-    height: 25px; 
-    width: 30px;
-    background-color: #EEEEEE;
-    border: none;
-    border-radius: 2px;
-    box-shadow: 2px 2px navy;
-    &:hover {
-        background: white;}
-    &:active {
-        background: #59DA50;}
-`
+
 
 const Exit = styled.div`
     /* 방 나가기 구역 */
     display: flex;
-    flex:3;
+    flex:2;
     align-items: center;
     justify-content: center;
 `
@@ -236,19 +226,35 @@ const ExitButton = styled.button`
     cursor: pointer;
     box-shadow: 3px 3px navy;
 `
-const Member =({member})=>{
+const Member =({member, toggle})=>{
+    console.log(member)
     return(
-        <div style={{display:'flex', height:"10%", padding:"5px"}}>
-            <p>{member.nickname}</p>
+        <div style={{display:'flex', height:"15%",fontSize:"large" , padding:"5px"}}>
+            <p style={{flex:1}}>{member.icon}</p>
+            <p style={{flex:4}}>{member.nickname}</p>
             <audio id={member.id}></audio>
+            <div style={{flex:1}}>{toggle ? <Mute src={mute}></Mute> : <Unmute src={unmute}></Unmute>}</div>
         </div>
-    );
-}
+    )};
+    
 const Song =({song})=>{
     return(
-        <p style={{margin:"2px",width:"100%", overflow:'hidden'}}>{song.title}</p>
+        <p style={{marginBottom:"5px",width:"100%", overflow:'hidden',fontSize:"large" }}>{song.title}</p>
     );
 }
+
+const Mute = styled.img`
+    width: 20px;
+    height: 20px;
+`
+
+const Unmute = styled.img`
+    width: 20px;
+    height: 20px;
+`
+
+const store = []
+
 function Room() {
     const navigate = useNavigate(); 
 
@@ -276,12 +282,19 @@ function Room() {
         setSongURL(e.target.value)
     }
 
+    const [chats, setChats] = useState([
+    ])
+    
     let audioCtx = new AudioContext();
     let localSource 
     let localgain = audioCtx.createGain();
     localgain.gain.value = 1;
 
+
+    const [rooms, setRooms] = useState([]);
+
     useEffect(()=>{
+        
 
         //Youtube API   
         var tag = document.createElement('script');
@@ -302,7 +315,7 @@ function Room() {
             setVideo(playData.url);
             songList.shift();
             setSongs([...songList]);
-            setnowPlaying(playData)
+            setnowPlaying({id:playData.id, title:playData.title,url:playData.url})
             nowSong = playData
         })
 
@@ -339,7 +352,7 @@ function Room() {
         user.socket.on("showMemberList", (data, joined)=>{
             let tempMemberList = [];
             for(const value of data){
-                tempMemberList.push(value) 
+                tempMemberList.push({id:value.id, icon:value.icon, nickname:value.nickname}) 
             }
            
             setMembers(tempMemberList)
@@ -356,12 +369,23 @@ function Room() {
             memberList = tempMemberList.slice();
 
             if(memberList.length==1){
-                document.getElementById(user.socket.id).srcObject = user.mediaStream;
-                localSource = audioCtx.createMediaStreamSource(document.getElementById(user.socket.id).srcObject)
-                localSource.connect(localgain);
-                localSource.connect(audioCtx.destination);
+                setTimeout(() => {
+                    document.getElementById(user.socket.id).srcObject = user.mediaStream;
+                    localSource = audioCtx.createMediaStreamSource(document.getElementById(user.socket.id).srcObject)
+                    localSource.connect(localgain);
+                    localSource.connect(audioCtx.destination);
+                }, 100);
             }
         })
+
+        //서버에서 채팅 내용  받기
+
+        user.socket.on('showChat', (content) => {        //socketOn 이벤트는 리렌더링할 때마다 수가 늘어난다.  
+            store.push(content)
+            setChats([...chats, ...store])
+        })
+
+        //
 
         user.socket.on("breakRoom",()=>{
             exitToLobby()
@@ -523,14 +547,65 @@ function Room() {
         }
     }
 
+    //채팅 입력해서 서버로 보내기
+    const [inputs, setInputs] = useState({
+        chat: '',
+    })
+
+    const { chat } = inputs;
+
+    const onChange = (e) => {
+        const { name, value } = e.target; // 우선 e.target 에서 name 과 value 를 추출
+        setInputs({
+          ...inputs,                      // 기존의 input 객체를 복사한 뒤
+          [name]: value                   // name 키를 가진 값을 value 로 설정
+        });
+      };
+    
+
+    const onSubmit = (e) => {   
+        e.preventDefault();
+        setInputs({chat:''})
+        user.socket.emit('sendChat', user.roomInfo, chat)
+    };
+
+    // 채팅 받아서 띄우기
+    
+    
+    const chatList = () => {
+        return chats.map((data, index) => (
+			<p key={index}>
+					{data}
+			</p>
+		)) 
+    };
+
+    const [toggle, setToggle] = useState(false);
+
+
+    const onMute = () => {
+        if (toggle == false){
+            setToggle(true)
+        } else {
+            setToggle(false)
+        }
+
+    }
+
+
     const exitToLobby = () =>{
+        store.splice(0)
         user.socket.emit('leaveRoom', user.roomInfo, user.host)
         user.host=false;
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
 
-    return (
+    console.log(user);
+    console.log(user.roomInfo);
 
+    
+
+    return (
         <Background>
         
         <Left>
@@ -549,10 +624,10 @@ function Room() {
                 <div>
                 참가자<br></br><br></br>
                 {members.map(member => (
-                    <Member member={member}/>
+                    <Member member={member} toggle={toggle}/>
                 ))
                 }
-                </div>   
+                </div>        
             </List>
 
             <Copyright><center>
@@ -562,7 +637,7 @@ function Room() {
         </Left>
 
         <Center>
-            <ViewTextarea></ViewTextarea>
+            <ViewTextarea>{user.roomInfo.substr(5)}</ViewTextarea>
             <div style={{flex:"12", border: "1px solid lightgray", borderRadius: "10px",pointerEvents:"none"}} id='player'>
             </div>           
             <ViewTextarea readOnly value={nowPlaying.title}></ViewTextarea>
@@ -595,29 +670,18 @@ function Room() {
             </NetworkStatus>
 
             <Chatting>
-                <p>
-                    채팅<br></br><br></br>
-                    <textarea cols="25" rows="25"
-                        style={{
-                            backgroundColor: "rgb(255,255,255,0.5)",
-                            resize: "none"}}>
-                        <input type='text'></input>
-                    </textarea>
-                </p>
+                    <div style={{ width: '100%', flex: '1' }}>채팅</div>
+                    <div style={{ overflow: 'auto', width: '100%', flex: '9' }}>
+                        {chatList()}
+                    </div>
             </Chatting>
 
             <ChatInput>
-                    <form>
-                        <textarea type="input" text-overflow="clip"
-                            style={{width: "80%", height: "100%",
-                                resize: "none", border: "white"}}>        
-                        </textarea>
-
-                        <Chatpush type="submit"> 
-                            <img src='../../img/채팅전송버튼.png' 
-                                style={{width:"15px",height:"15px"}}></img>
-                        </Chatpush>
-                    </form>
+                    <SendChat style={{ whitespace: "pre-line" }}
+                        chat={chat}
+                        onChange={onChange}
+                        onSubmit={onSubmit}
+                    />
             </ChatInput>
             
 
