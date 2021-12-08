@@ -68,7 +68,7 @@ const Room_list = styled.div`
     width: 350px;
     height: 380px;
     color: lightgray;
-    overflow-y: scroll;
+    overflow-y: auto;
 `
 const Room_search = styled.div`
     display: flex;

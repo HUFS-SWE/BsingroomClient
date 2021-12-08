@@ -101,17 +101,17 @@ const Roomname = styled.div`
     box-sizing: content-box;
 `
 
-const ViewTextarea = styled.div`
+const ViewTextarea = styled.input`
     /* 방제, 현재곡 텍스트 */
     flex: 1;
-    font-size: 15px;
+    font-size: 25px;
     color: white;
     background: transparent;
     border: 1px solid lightgray;
     border-radius: 10px;
     box-sizing: content-box;
     margin: 0.25em;
-    padding: 0.25em 0.25em;
+    padding: 10px;
 `
 
 const ReserveSong = styled.div`
@@ -637,7 +637,7 @@ function Room() {
         </Left>
 
         <Center>
-            <ViewTextarea>{user.roomInfo.substr(5)}</ViewTextarea>
+            <ViewTextarea readOnly value={user.roomInfo.substr(5)}></ViewTextarea>
             <div style={{flex:"12", border: "1px solid lightgray", borderRadius: "10px",pointerEvents:"none"}} id='player'>
             </div>           
             <ViewTextarea readOnly value={nowPlaying.title}></ViewTextarea>
