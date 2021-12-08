@@ -507,12 +507,13 @@ function Room() {
         return (match&&match[7].length==11)? match[7] : false;
     }
 
-    const setVideo =(url)=>{
+    const setVideo =(url, time)=>{
         const ytbID = youtubeParser(url);
         if(ytbID){
             palyer = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
+                startSeconds: time,
                 videoId: ytbID,
                 playerVars: { 'autoplay': 1, 'controls': 0 },
                 events:{
