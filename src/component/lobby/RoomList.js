@@ -3,7 +3,7 @@ import React from 'react';
 function Room({ room, onEnter }) {
   console.log(room)
   return (
-    <div style={{marginTop:'4'}}>
+    <div style={{marginTop:'6px'}}>
       
         {room.roomname.slice(5)} <span>: {room.membercount}명</span>
       

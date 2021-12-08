@@ -6,7 +6,6 @@ import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
 import SendChat from './sendChat'
-import { stepIconClasses } from '@mui/material';
 import mute from "../../img/iconfinder-mute-mic-microphone-audio-sound-4593173_122241.png";
 import unmute from "../../img/microphone-black-shape_icon-icons.com_73491.png";
 
@@ -259,7 +258,11 @@ function Room() {
     
     let audioCtx = new AudioContext();
 
+
+    const [rooms, setRooms] = useState([]);
+
     useEffect(()=>{
+        
 
         //Youtube API
         var tag = document.createElement('script');
@@ -479,8 +482,12 @@ function Room() {
         navigate('/lobby', {replace:true, state: { nickname : user.nickname, icon : user.userIcon}})
     }
 
-    return (
+    console.log(user);
+    console.log(user.roomInfo);
 
+    
+
+    return (
         <Background>
         
         <Left>

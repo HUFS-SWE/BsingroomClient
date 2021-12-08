@@ -155,6 +155,7 @@ function Lobby() {
             }
             console.log(roomList)
             setRooms(roomList)
+            fetchRoom()
         })
 
 
