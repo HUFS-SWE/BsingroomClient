@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import chatbutton from '../../img/채팅전송버튼.png';
 import bsing from '../../img/B대면노래방.png';
 import { UserDispatch } from '../../app.js'
 import Leave from './leave';
@@ -64,7 +63,7 @@ const List = styled.div`
     flex:5;
     flex-direction: column;
     position: relative;
-    width:100%;
+    width: auto;
     margin: 0.25em;
     padding: 0.7em 0.7em;
     border: 1px solid palevioletred;
@@ -91,7 +90,7 @@ const Copyright = styled.div`
 const Roomname = styled.div`
     /* 방제 */ 
     flex:1;
-    width: 100%;
+    width: auto;
     height: auto;
     margin: 0.25em;
     padding: 0.25em 0.25em;
@@ -105,13 +104,15 @@ const ViewTextarea = styled.input`
     /* 방제, 현재곡 텍스트 */
     flex: 1;
     font-size: 25px;
+    width: auto;
     color: white;
-    background: transparent;
-    border: 1px solid lightgray;
-    border-radius: 10px;
-    box-sizing: content-box;
     margin: 0.25em;
-    padding: 10px;
+    padding: 0.25em 0.25em;
+    background: transparent;
+    border: 1px solid palevioletred; 
+    border-color: lightgray;
+    border-radius: 10px;
+   
 `
 
 const ReserveSong = styled.div`
@@ -119,7 +120,6 @@ const ReserveSong = styled.div`
     flex:8;
     position: relative;
     width: auto;
-    height: 20%;
     margin: 0.25em;
     padding: 0.25em 0.25em;
     border: 1px solid palevioletred;
@@ -153,7 +153,7 @@ const Sound = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    flex:1.5;
+    width: auto;
     margin: 0.25em;
     padding: 0.25em 0.25em;
     border: 1px solid palevioletred;
@@ -192,6 +192,7 @@ const Chatting = styled.div`
     border-radius: 10px;
     word-break:break-all;
     background-color:rgba(255, 255, 255, 0.1);
+
 `
 
 const ChatInput = styled.div`
@@ -200,6 +201,7 @@ const ChatInput = styled.div`
     flex:3;
     position: relative;
     justify-content: center;
+    align-items: center;
     width: auto;
     height: auto;
     padding: 0.7em 0.7em;
@@ -611,8 +613,8 @@ function Room() {
         <Left>
 
             <List>
-                <p  style={{width:"100%"}}>예약목록</p> <br></br><br></br>
-                <div style={{width:"100%",overflowY:'auto', overflowX:'hidden'}}>
+                <p  style={{width:"100%"}}>예약목록</p> 
+                <div style={{width:"100%",overflowY:'auto', overflowX:'hidden', marginTop:'10px'}}>
                 {songs.map(song => (
                     <Song song={song}/>
                 ))
@@ -621,8 +623,9 @@ function Room() {
             </List>
 
             <List>
-                <div>
-                참가자<br></br><br></br>
+                
+                <p  style={{width:"100%"}}>참가자</p>
+                <div style={{width:"100%", marginTop:'10px'}}>
                 {members.map(member => (
                     <Member member={member} toggle={toggle}/>
                 ))
@@ -638,7 +641,7 @@ function Room() {
 
         <Center>
             <ViewTextarea readOnly value={user.roomInfo.substr(5)}></ViewTextarea>
-            <div style={{flex:"12", border: "1px solid lightgray", borderRadius: "10px",pointerEvents:"none"}} id='player'>
+            <div style={{flex:"12", width:'auto', margin: '0.25em', padding: '0.25em 0.25e', border: "1px solid lightgray", borderRadius: "10px",pointerEvents:"none"}} id='player'>
             </div>           
             <ViewTextarea readOnly value={nowPlaying.title}></ViewTextarea>
 
@@ -657,8 +660,8 @@ function Room() {
             </ReserveSong>
             
             <Sound>
-                <p>Input</p><input type='range'></input> &nbsp; &nbsp;
-                <p>Output</p><input type='range'></input>
+                Input<input type='range'></input> 
+                Output<input type='range'></input>
             </Sound> 
 
         </Center>
